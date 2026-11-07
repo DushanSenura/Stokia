@@ -58,6 +58,12 @@ export interface ReportIndexRow {
   lastExport: { format: ExportFormat; at: string } | null;
 }
 
+/**
+ * The months worth listing: the current month (always, even before it has any figure) and every earlier month that has figures.
+ * An earlier month with no counts at all is just an empty row, so it is left out of the list. (Its report can still be opened by address.)
+ */
+export const listedMonths = (rows: ReportIndexRow[]): ReportIndexRow[] => rows.filter((r) => r.status === "in_progress" || r.estimatedSales !== null);
+
 export interface MonthlyReport {
   month: string; shopName: string; timezone: string; currency: "LKR";
   period: { from: string; to: string }; openingCountDate: string; closingCountDate: string;

@@ -1,6 +1,7 @@
 import { useRouter } from "expo-router";
 import { useCallback, useMemo } from "react";
 import { ActivityIndicator, Pressable, View } from "react-native";
+import { listedMonths } from "@/features/reports/report";
 import { formatBusinessDate, formatMonth } from "@/lib/dates/business";
 import { formatLkr } from "@/lib/formatting/money";
 import { useI18n } from "~/i18n";
@@ -60,7 +61,7 @@ export function ReportsScreen() {
           </Card>
 
           <AppText variant="heading">{t("m.reports.months")}</AppText>
-          {data.months.map((m) => (
+          {listedMonths(data.months).map((m) => (
             <Pressable
               key={m.month} accessibilityRole="button" onPress={() => router.push(`/reports/${m.month}`)}
               accessibilityLabel={`${formatMonth(m.month, locale)}, ${m.estimatedSales === null ? t("rep.noFigures") : formatLkr(m.estimatedSales)}`}
