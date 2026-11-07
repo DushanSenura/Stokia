@@ -57,7 +57,7 @@ test("variant search API rejects anonymous requests", async ({ request }) => {
 test.describe("dashboard (demo-data preview)", () => {
   test("renders every required section with no horizontal overflow", async ({ page }) => {
     await page.goto("/preview/dashboard");
-    await expect(page.getByRole("link", { name: "Enter Morning Stock" })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Enter Stock Sheet" })).toBeVisible();
     for (const k of ["Yesterday's Estimated Sales", "Monthly Estimated Sales", "Current Stock Value", "Pending Stock Counts"]) await expect(page.getByText(k).first()).toBeVisible();
     for (const h of ["Daily Estimated Sales", "Top-selling products", "Low-stock alerts", "Recent stock activity", "Quick actions"]) await expect(page.getByRole("heading", { name: h })).toBeVisible();
     // charts actually drew (an <svg> with bars/lines), not just empty frames
@@ -74,7 +74,7 @@ test.describe("dashboard (demo-data preview)", () => {
   test("a confirmed count replaces the entry button", async ({ page }) => {
     await page.goto("/preview/dashboard?state=confirmed");
     await expect(page.getByText("Today's count is confirmed").first()).toBeVisible();
-    await expect(page.getByRole("link", { name: "Enter Morning Stock" })).toHaveCount(0);
+    await expect(page.getByRole("link", { name: "Enter Stock Sheet" })).toHaveCount(0);
   });
 
   test("every chart has a table alternative", async ({ page }) => {

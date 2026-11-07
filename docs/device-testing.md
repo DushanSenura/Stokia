@@ -53,7 +53,7 @@ Use a test shop, not real data. Tick each one.
 - [ ] Sign out; reopen: asked to sign in. Wrong password shows a clear message.
 
 **Counting offline** (the central promise)
-- [ ] Open Morning Stock with a signal so products load. Turn on **airplane mode**.
+- [ ] Open the Stock Sheet with a signal so products load. Turn on **airplane mode**.
 - [ ] Enter a count and confirm. It says **waiting to send**, never "confirmed".
 - [ ] Close the app (swipe it away) and reopen in airplane mode: the waiting count is still there (SQLite on the device).
 - [ ] Turn airplane mode off, open the app: the count is sent and now shows as confirmed on Home and in the web app. Sent once, not twice.

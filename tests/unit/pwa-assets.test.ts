@@ -31,7 +31,7 @@ describe("web app manifest", () => {
     }
   });
 
-  it("the shortcut opens the morning stock count", () => {
+  it("the shortcut opens the stock sheet", () => {
     expect(m.shortcuts?.[0]).toMatchObject({ url: "/morning-stock" });
   });
 });

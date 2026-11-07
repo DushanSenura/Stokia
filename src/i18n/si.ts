@@ -1,6 +1,7 @@
 import type { MessageKey } from "./en";
 import { siCore } from "./si-core";
 import { siSales } from "./si-sales";
+import { siRecount } from "./si-recount";
 
 /**
  * Sinhala translations. Partial by design: any missing key falls back to English.
@@ -10,7 +11,7 @@ const siBase: Partial<Record<MessageKey, string>> = {
   "brand.tagline": "අද ගණන් කරන්න. ඊයේ දැනගන්න.",
 
   "nav.dashboard": "උපකරණ පුවරුව",
-  "nav.morningStock": "උදෑසන තොගය",
+  "nav.morningStock": "තොග පත්‍රිකාව",
   "nav.products": "නිෂ්පාදන",
   "nav.packaging": "ඇසුරුම්",
   "nav.movements": "තොග චලනයන්",
@@ -56,7 +57,7 @@ const siBase: Partial<Record<MessageKey, string>> = {
   "setup.submit": "වෙළඳසැල සාදන්න",
 
   "dash.greeting": "ආයුබෝවන්, {name}",
-  "dash.enterMorning": "උදෑසන තොගය ඇතුළත් කරන්න",
+  "dash.enterMorning": "තොග පත්‍රිකාව ඇතුළත් කරන්න",
   "dash.kpi.yesterdaySales": "ඊයේ ඇස්තමේන්තු විකුණුම්",
   "dash.kpi.yesterdayUnits": "ඊයේ විකුණු ඒකක",
   "dash.kpi.pending": "ඉතිරි තොග ගණන් කිරීම්",
@@ -99,4 +100,4 @@ const siBase: Partial<Record<MessageKey, string>> = {
 };
 
 /** Base translations overlaid with the core-workflow set (si-core.ts wins where both define a key). */
-export const si: Partial<Record<MessageKey, string>> = { ...siBase, ...siCore, ...siSales };
+export const si: Partial<Record<MessageKey, string>> = { ...siBase, ...siCore, ...siSales, ...siRecount };

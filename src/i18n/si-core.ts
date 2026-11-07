@@ -49,7 +49,7 @@ export const siCore: Partial<Record<MessageKey, string>> = {
   "setup.error.exists": "ඔබ දැනටමත් වෙළඳසැලකට අයත් වේ.",
 
   // morning stock
-  "ms.title": "උදෑසන තොග ඇතුළත් කිරීම",
+  "ms.title": "තොග පත්‍රිකාව",
   "ms.countDate": "උදෑසන ගණන් කිරීම: {date}",
   "ms.calculatesFor": "විකුණුම් ගණනය වන දිනය: {date}",
   "ms.status.notStarted": "ආරම්භ කර නැත",
@@ -170,7 +170,7 @@ export const siCore: Partial<Record<MessageKey, string>> = {
   "ms.movementsIncluded": "සටහන් කළ චලනයන් ඇතුළත්",
 
   // dashboard
-  "dash.morning.title": "උදෑසන තොගය",
+  "dash.morning.title": "තොග පත්‍රිකාව",
   "dash.morning.countDate": "ගණන් කිරීමේ දිනය",
   "dash.morning.salesDate": "විකුණුම් ගණනය වන දිනය",
   "dash.morning.lastCount": "අවසන් සම්පූර්ණ කළ ගණන් කිරීම",

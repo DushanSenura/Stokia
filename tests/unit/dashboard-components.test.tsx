@@ -89,9 +89,9 @@ describe("MorningCard (the page's primary action)", () => {
     expect(screen.getAllByText("5 November 2026").length).toBeGreaterThan(0);
     expect(screen.getByRole("link", { name: /5 Nov 2026.*Nimal Perera/ })).toHaveAttribute("href", "/stock-history/demo-session-4");
   });
-  it("offers 'Enter Morning Stock' when not started, 'Continue' for a draft", () => {
+  it("offers 'Enter Stock Sheet' when not started, 'Continue' for a draft", () => {
     card(demoDashboard());
-    expect(screen.getByRole("link", { name: "Enter Morning Stock" })).toHaveAttribute("href", "/morning-stock");
+    expect(screen.getByRole("link", { name: "Enter Stock Sheet" })).toHaveAttribute("href", "/morning-stock");
   });
   it("continues a draft", () => {
     card(demoDashboard({ todayState: "draft" }));
@@ -100,12 +100,12 @@ describe("MorningCard (the page's primary action)", () => {
   it("when confirmed, replaces the button with a confirmation and a link to the count", () => {
     card(demoDashboard({ todayState: "confirmed" }));
     expect(screen.getByText("Today's count is confirmed")).toBeInTheDocument();
-    expect(screen.queryByRole("link", { name: "Enter Morning Stock" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "Enter Stock Sheet" })).not.toBeInTheDocument();
     expect(screen.getByRole("link", { name: "View count" })).toBeInTheDocument();
   });
   it("viewers see no entry button", () => {
     card(demo(), false);
-    expect(screen.queryByRole("link", { name: "Enter Morning Stock" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "Enter Stock Sheet" })).not.toBeInTheDocument();
     expect(screen.getByText(/Only owners and stock managers/)).toBeInTheDocument();
   });
   it("says so when no count was ever confirmed", () => {
@@ -213,7 +213,7 @@ describe("NotificationBell", () => {
     setup();
     const bell = await screen.findByRole("button", { name: "Notifications (3)" });
     await userEvent.click(bell);
-    expect(await screen.findByText(`Morning stock for ${DEMO_TODAY.replace("2026-11-06", "6 November 2026")} has not been entered yet.`)).toBeInTheDocument();
+    expect(await screen.findByText(`The stock sheet for ${DEMO_TODAY.replace("2026-11-06", "6 November 2026")} has not been entered yet.`)).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /7 products are low on stock/ })).toHaveAttribute("href", "/dashboard#low-stock");
     await userEvent.keyboard("{Escape}");
     await waitFor(() => expect(screen.queryByRole("region", { name: "Notifications" })).not.toBeInTheDocument());

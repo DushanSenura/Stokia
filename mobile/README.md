@@ -8,7 +8,7 @@ The native app for the daily job: count the shelves each morning, with or withou
 |---|---|
 | Sign in / out | Email and password, session kept in the phone's secure store (Keychain / Keystore), password recovery by email |
 | Home | Is this morning's count done, and yesterday's **estimated** sales (per unit: units of different kinds are never added together). Works offline from the last saved view |
-| Morning Stock | The whole counting flow: search, filters, big numeric inputs, bundles and loose items, live total / change / estimated sold, review, confirm. Unfinished entries are kept on the phone as you type |
+| Stock Sheet | The whole counting flow: search, filters, big numeric inputs, bundles and loose items, live total / change / estimated sold, review, confirm. Unfinished entries are kept on the phone as you type |
 | Offline | Products are saved on the phone, so you can count with no signal. A count confirmed offline is kept on the phone and **never shown as confirmed** until the server accepts it |
 | Conflicts | If another device counted the same morning, you see both sets of numbers side by side. Nothing is ever overwritten |
 | Products | Browse and search products, filter by category or "low stock only", see each size's selling price, last counted quantity, low-stock flag and how the packaging nests. **View-only** on the phone (any role); products are added and changed in the web app. A product nobody counted says "not counted yet", never "low" |

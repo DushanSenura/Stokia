@@ -56,6 +56,7 @@ definer_allowlist as (
        'request_count_correction', 'decide_count_correction', 'cancel_count_correction',
        'data_health_check', 'repair_sales', 'record_backup_export', 'submit_count',
        'record_sales_breakdown', 'clear_sales_breakdown', 'set_packaging_price',
+       'request_recount', 'decide_recount', 'cancel_recount', 'submit_recount',
        'is_shop_member', 'has_shop_role', 'product_shop_id', 'variant_shop_id', 'session_shop_id')
 ),
 -- 8. Append-only / derived tables must not be writable by API clients.
@@ -63,7 +64,7 @@ append_only as (
   select 'CLIENT_CAN_WRITE_PROTECTED_TABLE', t.tbl || ':' || t.priv
     from (values ('audit_logs'), ('daily_sales'), ('daily_sales_revisions'), ('stock_count_corrections'), ('stock_movements'),
                  ('report_exports'), ('stock_count_sessions'), ('stock_count_lines'),
-                 ('sales_breakdowns'), ('sales_breakdown_lines'), ('sales_breakdown_revisions'), ('packaging_unit_price_history')) as tb(tbl)
+                 ('recount_requests'), ('sales_breakdowns'), ('sales_breakdown_lines'), ('sales_breakdown_revisions'), ('packaging_unit_price_history')) as tb(tbl)
     cross join (values ('INSERT'), ('UPDATE'), ('DELETE')) as pr(priv)
     cross join lateral (select tb.tbl, pr.priv) t
    where has_table_privilege('authenticated', 'public.' || tb.tbl, pr.priv)

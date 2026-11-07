@@ -5,7 +5,7 @@
  */
 export const mobileEn = {
   "m.tab.home": "Home",
-  "m.tab.stock": "Morning Stock",
+  "m.tab.stock": "Stock Sheet",
   "m.tab.more": "More",
 
   "m.notConfigured": "This copy of the app has no server address. See mobile/.env.example.",
@@ -16,8 +16,8 @@ export const mobileEn = {
   "m.reset.help": "We will email you a link to choose a new password. You finish it in your browser.",
 
   "m.home.title": "Today",
-  "m.home.enter": "Enter Morning Stock",
-  "m.home.continue": "Continue Morning Stock",
+  "m.home.enter": "Enter Stock Sheet",
+  "m.home.continue": "Continue Stock Sheet",
   "m.home.todayCount": "Today's count",
   "m.home.confirmedToday": "Today's count is confirmed.",
   "m.home.salesFor": "Estimated sales for {date}",
@@ -157,13 +157,13 @@ export type MobileKey = keyof typeof mobileEn;
 
 export const mobileSi: Partial<Record<MobileKey, string>> = {
   "m.tab.home": "මුල් පිටුව",
-  "m.tab.stock": "උදෑසන තොගය",
+  "m.tab.stock": "තොග පත්‍රිකාව",
   "m.tab.more": "තවත්",
   "m.signin.noShop": "මෙම ගිණුම තවම කිසිදු වෙළඳසැලක කොටසක් නොවේ. හිමිකරුගෙන් ඔබට ආරාධනා කරන ලෙස ඉල්ලා නැවත පිවිසෙන්න.",
   "m.signin.loadFailed": "Stokia වෙත සම්බන්ධ විය නොහැකි විය. සම්බන්ධතාව පරීක්ෂා කර නැවත උත්සාහ කරන්න.",
   "m.home.title": "අද",
-  "m.home.enter": "උදෑසන තොගය ඇතුළත් කරන්න",
-  "m.home.continue": "උදෑසන තොගය දිගටම කරන්න",
+  "m.home.enter": "තොග පත්‍රිකාව ඇතුළත් කරන්න",
+  "m.home.continue": "තොග පත්‍රිකාව දිගටම කරන්න",
   "m.home.todayCount": "අද ගණන් කිරීම",
   "m.home.confirmedToday": "අද ගණන් කිරීම තහවුරු කර ඇත.",
   "m.home.salesFor": "{date} සඳහා ඇස්තමේන්තු විකුණුම්",

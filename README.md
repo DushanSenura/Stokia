@@ -57,7 +57,7 @@ Design review without a database: `STOKIA_PREVIEW=1 npm run dev`, then open `/pr
 - **Browsers:** Chromium, Firefox, WebKit; desktop, Android and iPhone viewports; no horizontal scroll from 320 px to 1440 px; no console errors or CSP violations.
 
 ## Phone app
-`mobile/` is the native Android and iPhone app (Expo): Home, Morning Stock (with offline queue and conflict screen), Products, Reports (with sharing) and Stock movements (received, damaged, returns, adjustments, undo; entries made offline wait on the phone and are sent later) and the optional known-box-sales breakdown. It shares the business rules with the web app and talks to it through `/api/v1`. Setup, running it, building installable files and its honest limits are in [mobile/README.md](mobile/README.md).
+`mobile/` is the native Android and iPhone app (Expo): Home, Stock Sheet (with offline queue and conflict screen), Products, Reports (with sharing) and Stock movements (received, damaged, returns, adjustments, undo; entries made offline wait on the phone and are sent later) and the optional known-box-sales breakdown. It shares the business rules with the web app and talks to it through `/api/v1`. Setup, running it, building installable files and its honest limits are in [mobile/README.md](mobile/README.md).
 
 ## Documentation
 - [docs/architecture.md](docs/architecture.md): layers, security model, every phase's design decisions and trade-offs.
