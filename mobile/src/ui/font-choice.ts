@@ -1,4 +1,5 @@
-import type { TextStyle } from "react-native";
+// The same shapes as React Native FontWeight and fontFamily, declared here so this file needs no react-native types (the web build type-checks it for its unit test).
+type FontWeight = "normal" | "bold" | "100" | "200" | "300" | "400" | "500" | "600" | "700" | "800" | "900" | 100 | 200 | 300 | 400 | 500 | 600 | 700 | 800 | 900;
 
 // Pure (no font files imported), so it can be unit-tested. See fonts.ts for the font files themselves.
 // A native custom font has one family name per weight, so a weight is chosen by family, not by `fontWeight`.
@@ -6,7 +7,7 @@ import type { TextStyle } from "react-native";
 export type Weight = "regular" | "semibold" | "bold";
 
 /** CSS-style weight (400, "600", "bold", ...) to one of the three weights the app bundles. */
-export function weightOf(w: TextStyle["fontWeight"] | undefined): Weight {
+export function weightOf(w: FontWeight | undefined): Weight {
   if (w === undefined || w === "normal") return "regular";
   const n = w === "bold" ? 700 : Number(w);
   if (!Number.isFinite(n) || n < 600) return "regular";
@@ -19,4 +20,4 @@ const SUFFIX: Record<Weight, string> = { regular: "400Regular", semibold: "600Se
 export const fontFamilyFor = (locale: "en" | "si", weight: Weight): string => `${locale === "si" ? "NotoSansSinhala" : "Inter"}_${SUFFIX[weight]}`;
 
 /** The style to put on any Text / TextInput that is not an AppText. */
-export const fontStyle = (locale: "en" | "si", w?: TextStyle["fontWeight"]): Pick<TextStyle, "fontFamily"> => ({ fontFamily: fontFamilyFor(locale, weightOf(w)) });
+export const fontStyle = (locale: "en" | "si", w?: FontWeight): { fontFamily: string } => ({ fontFamily: fontFamilyFor(locale, weightOf(w)) });
