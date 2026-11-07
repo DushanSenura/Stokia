@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, Noto_Sans_Sinhala } from "next/font/google";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import { getLocale } from "@/i18n/server";
 import { AppProviders } from "@/providers/app-providers";
 import { THEME_SCRIPT } from "@/providers/theme-provider";
@@ -38,6 +39,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
       <head><script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} /></head>
       <body className="min-h-dvh">
         <AppProviders locale={locale}>{children}</AppProviders>
+        <SpeedInsights />
       </body>
     </html>
   );
