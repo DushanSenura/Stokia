@@ -7,6 +7,7 @@ import { isConfigured } from "~/lib/config";
 import { kvGet, kvGetJson, kvRemove, kvRemovePrefix, kvSet, kvSetJson } from "~/lib/kv";
 import { getSupabase } from "~/lib/supabase";
 import type { MobileKey } from "~/i18n/mobile-strings";
+import { movementQueue } from "~/offline/movement-queue";
 import { queue } from "~/offline/queue";
 
 /**
@@ -56,6 +57,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
 
   const wipeLocal = useCallback(async () => {
     await queue.clearAllQueued();
+    await movementQueue.clear();
     await kvRemovePrefix("draft.");
     await kvRemovePrefix("cache.");
   }, []);

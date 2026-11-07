@@ -7,6 +7,7 @@ import { formatBusinessDate, salesDateFor } from "@/lib/dates/business";
 import { formatShopDateTime } from "@/lib/dates/format";
 import { createClient } from "@/lib/supabase/server";
 import { SalesTable } from "@/components/stock/sales-table";
+import { HistorySalesBreakdown } from "@/components/sales/history-sales-breakdown";
 import { formatLkr } from "@/lib/formatting/money";
 import { getSalesForDate, getSessionDetail, summarizeSales } from "@/server/repositories/inventory";
 import { getSessionContext } from "@/server/services/session";
@@ -144,6 +145,7 @@ export default async function CountDetailPage({ params }: PageProps<"/stock-hist
           )}
           <SalesTable rows={salesRows} t={t} />
           <p className="text-xs text-muted">{t("sales.estimateNote")}</p>
+          {salesSummary.calculated > 0 && <HistorySalesBreakdown date={salesDate} timezone={m.timezone} />}
         </section>
       )}
     </div>

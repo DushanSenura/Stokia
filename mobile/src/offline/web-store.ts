@@ -1,4 +1,5 @@
 import type { QueuedCount, QueueStore } from "@/lib/offline/queue-engine";
+import type { MovementStore, QueuedMovement } from "@/lib/offline/movement-queue";
 
 /**
  * The offline queue for the BROWSER test build of the phone app: one localStorage entry holding all queued counts. Real phones use
@@ -24,6 +25,32 @@ export function createLocalStorageQueueStore(storage: Pick<Storage, "getItem" | 
         const staged: Record<string, QueuedCount> = { ...rows };
         const result = await fn({ get: async (id) => staged[id], put: (e) => { staged[e.id] = e; } });
         write(staged); // only reached if `fn` did not throw: a failing update changes nothing
+        return result;
+      }).catch(() => fallback),
+    remove: (id) => serial(() => { const rows = read(); delete rows[id]; write(rows); }).catch(() => undefined),
+    clear: () => serial(() => { storage.removeItem(key); }).catch(() => undefined),
+  };
+}
+
+/** The movement queue for the browser test build: one localStorage entry holding all queued movements (same serialising as above). */
+export function createLocalStorageMovementStore(storage: Pick<Storage, "getItem" | "setItem" | "removeItem">, key = "stokia.movementQueue"): MovementStore {
+  const read = (): Record<string, QueuedMovement> => {
+    try { return JSON.parse(storage.getItem(key) ?? "{}") as Record<string, QueuedMovement>; } catch { return {}; }
+  };
+  const write = (rows: Record<string, QueuedMovement>) => storage.setItem(key, JSON.stringify(rows));
+  let chain: Promise<unknown> = Promise.resolve();
+  const serial = <T,>(fn: () => Promise<T> | T): Promise<T> => {
+    const next = chain.then(fn);
+    chain = next.catch(() => undefined);
+    return next;
+  };
+  return {
+    list: (scope) => serial(() => Object.values(read()).filter((e) => e.scope === scope)).catch(() => []),
+    transact: (fn, fallback) =>
+      serial(async () => {
+        const staged: Record<string, QueuedMovement> = { ...read() };
+        const result = await fn({ get: async (id) => staged[id], put: (e) => { staged[e.id] = e; } });
+        write(staged);
         return result;
       }).catch(() => fallback),
     remove: (id) => serial(() => { const rows = read(); delete rows[id]; write(rows); }).catch(() => undefined),

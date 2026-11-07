@@ -2,6 +2,8 @@ import type { ProductCatalog } from "@/features/inventory/catalog-types";
 import type { EntryItem, FieldValues } from "@/features/inventory/count-entry";
 import type { CountInput, CountResult, SalesSummary } from "@/features/inventory/count-types";
 import type { MonthlyReport, ReportIndexRow } from "@/features/reports/report";
+import type { MovementDraft, MovementResponse, PhoneMovement } from "@/features/movements/phone-types";
+import type { BreakdownDay, BreakdownDraft, BreakdownHistoryEntry, BreakdownResponse } from "@/features/sales/breakdown-types";
 
 /**
  * The phone's client for the Stokia server API (/api/v1). Pure and injectable, so it is tested without a phone.
@@ -47,8 +49,25 @@ export interface ReportsResponse { ok: true; shop: Membership; months: ReportInd
 /** The monthly report as the phone receives it: the per-variant table is left out (per-product totals are included). */
 export type PhoneReport = Omit<MonthlyReport, "variants">;
 export interface ReportResponse { ok: true; report: PhoneReport }
+export interface MovementsResponse { ok: true; shop: Membership; recent: PhoneMovement[] }
+export interface SalesBreakdownResponse { ok: true; shop: Membership; canWrite: boolean; day: BreakdownDay }
+export interface SalesBreakdownHistoryResponse { ok: true; history: BreakdownHistoryEntry[] }
 export type ReportFileFormat = "pdf" | "xlsx" | "csv";
 export interface ReportFile { bytes: Uint8Array; fileName: string; mime: string }
+
+/** The server's answer to a movement request: a real answer is returned, a refusal the person can read is returned, never swallowed. */
+function movementAnswer(status: number, body: unknown): MovementResponse {
+  if (status === 200 && body && typeof (body as { ok?: unknown }).ok === "boolean") return body as MovementResponse;
+  if (status === 403) return { ok: false, error: "error.forbidden" };
+  return { ok: false, error: "auth.error.generic" }; // 400 and anything unexpected
+}
+
+/** Same rule as for movements: an answer (including a refusal) is returned, never swallowed. */
+function breakdownAnswer(status: number, body: unknown): BreakdownResponse {
+  if (status === 200 && body && typeof (body as { ok?: unknown }).ok === "boolean") return body as BreakdownResponse;
+  if (status === 403) return { ok: false, error: "error.forbidden" };
+  return { ok: false, error: "auth.error.generic" };
+}
 
 /** A file name that is safe to write into the app's cache: no folders, no odd characters, never empty. */
 export function safeFileName(raw: string | null | undefined, fallback: string): string {
@@ -104,6 +123,38 @@ export function createApi(deps: ApiDeps) {
     morningStock: (shopId: string, date?: string) =>
       read<MorningStockResponse>(`/api/v1/morning-stock?shop=${encodeURIComponent(shopId)}${date ? `&date=${encodeURIComponent(date)}` : ""}`),
     products: (shopId: string) => read<ProductsResponse>(`/api/v1/products?shop=${encodeURIComponent(shopId)}`),
+    movements: (shopId: string) => read<MovementsResponse>(`/api/v1/movements?shop=${encodeURIComponent(shopId)}`),
+
+    /**
+     * Record one stock movement. Retrying with the SAME `key` is safe (the database returns the original and applies nothing twice), so
+     * "no answer" is THROWN and the screen offers to try again; a refusal is returned as an answer.
+     */
+    async recordMovement(a: { shopId: string; movement: MovementDraft; key: string }): Promise<MovementResponse> {
+      const { status, body } = await call("/api/v1/movements", { method: "POST", body: { shopId: a.shopId, movement: a.movement, key: a.key } });
+      return movementAnswer(status, body);
+    },
+
+    /** Reverse a movement (nothing is deleted; a matching entry cancels it). Same retry rule as `recordMovement`. */
+    async reverseMovement(a: { shopId: string; movementId: string; reason: string; key: string }): Promise<MovementResponse> {
+      const { status, body } = await call("/api/v1/movements/reverse", { method: "POST", body: { shopId: a.shopId, movementId: a.movementId, reason: a.reason, key: a.key } });
+      return movementAnswer(status, body);
+    },
+
+    /** The products whose sales on `date` (a sales date) can be split into whole packages, with that day's prices and any recorded breakdown. */
+    salesBreakdown: (shopId: string, date: string) =>
+      read<SalesBreakdownResponse>(`/api/v1/sales-breakdown?shop=${encodeURIComponent(shopId)}&date=${encodeURIComponent(date)}`),
+    salesBreakdownHistory: (shopId: string, variantId: string, date: string) =>
+      read<SalesBreakdownHistoryResponse>(`/api/v1/sales-breakdown/history?shop=${encodeURIComponent(shopId)}&variant=${encodeURIComponent(variantId)}&date=${encodeURIComponent(date)}`),
+
+    /** Record or change the known box sales. Retrying with the SAME `key` is safe: "no answer" is THROWN, a refusal is returned. Never changes stock. */
+    async saveSalesBreakdown(a: { shopId: string; draft: BreakdownDraft; key: string }): Promise<BreakdownResponse> {
+      const { status, body } = await call("/api/v1/sales-breakdown", { method: "POST", body: { shopId: a.shopId, draft: a.draft, key: a.key } });
+      return breakdownAnswer(status, body);
+    },
+    async clearSalesBreakdown(a: { shopId: string; variantId: string; date: string; reason: string; key: string }): Promise<BreakdownResponse> {
+      const { status, body } = await call("/api/v1/sales-breakdown/clear", { method: "POST", body: { shopId: a.shopId, variantId: a.variantId, date: a.date, reason: a.reason, key: a.key } });
+      return breakdownAnswer(status, body);
+    },
     reports: (shopId: string) => read<ReportsResponse>(`/api/v1/reports?shop=${encodeURIComponent(shopId)}`),
     report: (shopId: string, month: string) => read<ReportResponse>(`/api/v1/reports/${encodeURIComponent(month)}?shop=${encodeURIComponent(shopId)}`),
 

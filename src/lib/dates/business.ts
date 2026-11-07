@@ -28,8 +28,21 @@ export function daysBetween(a: string, b: string): number {
 /** The day whose sales a count on `countDate` calculates. */
 export const salesDateFor = (countDate: string): string => addDays(countDate, -1);
 
+/**
+ * Sinhala month names, January first, as the shop owner wants them written. Fixed here rather than taken from the device's Intl data, so
+ * the spelling is the same on every phone and browser (and does not fall back to English where Sinhala data is missing).
+ */
+export const SINHALA_MONTHS = ["ජනවාරි", "පෙබරවාරි", "මාර්තු", "අප්‍රේල්", "මැයි", "ජුනි", "ජුලි", "අගෝස්තු", "සැප්තැම්බර්", "ඔක්තෝම්බර්", "නොවැම්බර්", "දෙසැම්බර්"] as const;
+/** The traditional (Sinhala calendar) names for the same months, kept for places that want them. */
+export const SINHALA_TRADITIONAL_MONTHS = ["දුරුතු", "නවම්", "මැදින්", "බක්", "වෙසක්", "පොසොන්", "ඇසළ", "නිකිණි", "බිනව", "වප්", "ඉල්", "උදුවප්"] as const;
+
 export function formatBusinessDate(date: string, locale: "en" | "si" = "en", opts: Intl.DateTimeFormatOptions = { day: "numeric", month: "long", year: "numeric" }): string {
-  return new Intl.DateTimeFormat(locale === "si" ? "si-LK" : "en-GB", { timeZone: "UTC", ...opts }).format(new Date(`${date}T00:00:00Z`));
+  const at = new Date(`${date}T00:00:00Z`);
+  if (locale !== "si") return new Intl.DateTimeFormat("en-GB", { timeZone: "UTC", ...opts }).format(at);
+  // Keep the device's order and punctuation, but write the month with our own Sinhala name.
+  const name = SINHALA_MONTHS[at.getUTCMonth()];
+  return new Intl.DateTimeFormat("si-LK", { timeZone: "UTC", ...opts }).formatToParts(at)
+    .map((p) => (p.type === "month" && (opts.month === "long" || opts.month === "short" || opts.month === "narrow") ? name : p.value)).join("");
 }
 
 /**
@@ -79,7 +92,7 @@ export function daysInMonth(month: string): number {
 }
 
 export function formatMonth(month: string, locale: "en" | "si" = "en", style: "long" | "short" = "long"): string {
-  return new Intl.DateTimeFormat(locale === "si" ? "si-LK" : "en-GB", { timeZone: "UTC", month: style, year: "numeric" }).format(new Date(`${firstOfMonth(month)}T00:00:00Z`));
+  return formatBusinessDate(firstOfMonth(month), locale, { month: style, year: "numeric" });
 }
 
 /** The current wall-clock time in the shop's timezone as "YYYY-MM-DDTHH:mm" (for datetime-local inputs). */

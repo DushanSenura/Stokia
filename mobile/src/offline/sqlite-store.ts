@@ -1,4 +1,5 @@
 import type { QueuedCount, QueueStore } from "@/lib/offline/queue-engine";
+import type { MovementStore, QueuedMovement } from "@/lib/offline/movement-queue";
 
 /**
  * The phone's binding of the shared offline-queue rules (`src/lib/offline/queue-engine.ts`) to SQLite. The rules themselves are the
@@ -68,6 +69,59 @@ export function createSqliteQueueStore(open: () => Promise<SqlDriver>): QueueSto
 
     async clear() {
       try { await (await driver()).run("DELETE FROM queued_counts"); } catch { /* storage unavailable */ }
+    },
+  };
+}
+
+export const MOVEMENT_QUEUE_SCHEMA = `
+  CREATE TABLE IF NOT EXISTS queued_movements (
+    id TEXT PRIMARY KEY NOT NULL,
+    scope TEXT NOT NULL,
+    created_at INTEGER NOT NULL,
+    body TEXT NOT NULL
+  );
+  CREATE INDEX IF NOT EXISTS queued_movements_scope_idx ON queued_movements (scope, created_at);
+`;
+
+/** The phone's binding of the movement queue (`src/lib/offline/movement-queue.ts`) to SQLite: one row per queued movement. */
+export function createSqliteMovementStore(open: () => Promise<SqlDriver>): MovementStore {
+  let ready: Promise<SqlDriver> | null = null;
+  const driver = () => (ready ??= open().then(async (d) => { await d.exec(MOVEMENT_QUEUE_SCHEMA); return d; }).catch((e) => { ready = null; throw e; }));
+  const parse = (rows: { body: string }[]) => rows.map((r) => JSON.parse(r.body) as QueuedMovement);
+
+  return {
+    async list(scope) {
+      try {
+        const d = await driver();
+        return parse(await d.all<{ body: string }>("SELECT body FROM queued_movements WHERE scope = ? ORDER BY created_at", [scope]));
+      } catch {
+        return [];
+      }
+    },
+    async transact(fn, fallback) {
+      try {
+        const d = await driver();
+        return await d.transaction((tx) => fn({
+          get: async (id) => {
+            const rows = await tx.all<{ body: string }>("SELECT body FROM queued_movements WHERE id = ?", [id]);
+            return rows.length ? (JSON.parse(rows[0].body) as QueuedMovement) : undefined;
+          },
+          put: async (e) => {
+            await tx.run(
+              "INSERT INTO queued_movements (id, scope, created_at, body) VALUES (?, ?, ?, ?) ON CONFLICT(id) DO UPDATE SET scope = excluded.scope, created_at = excluded.created_at, body = excluded.body",
+              [e.id, e.scope, e.createdAt, JSON.stringify(e)],
+            );
+          },
+        }));
+      } catch {
+        return fallback; // storage failed: nothing was written (the transaction rolled back)
+      }
+    },
+    async remove(id) {
+      try { await (await driver()).run("DELETE FROM queued_movements WHERE id = ?", [id]); } catch { /* storage unavailable */ }
+    },
+    async clear() {
+      try { await (await driver()).run("DELETE FROM queued_movements"); } catch { /* storage unavailable */ }
     },
   };
 }

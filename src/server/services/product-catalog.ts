@@ -44,5 +44,6 @@ export function catalogItemFrom(i: EntryItem, lowStockLevel: string): CatalogIte
     sellingPrice: i.sellingPrice, lastCounted: i.previousBase, lowStockLevel,
     low: i.previousBase !== null && new Decimal(lowStockLevel).gt(0) && new Decimal(i.previousBase).lte(lowStockLevel),
     packaging: i.units.map((u) => describeUnit(u, i.units, i.baseUnit)).filter((s): s is string => !!s),
+    units: i.units.map((u) => ({ id: u.id, name: u.name, parentId: u.parentId, factor: String(u.factor) })),
   };
 }

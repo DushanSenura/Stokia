@@ -4,10 +4,11 @@ import { useI18n } from "~/i18n";
 import { SyncProvider } from "~/providers/sync";
 import { useSession } from "~/providers/session";
 import { useTheme } from "~/theme";
+import { fontStyle } from "~/ui/fonts";
 
 /** The three working tabs. The offline queue lives here, so it runs whenever the person is signed in and inside the app. */
 export default function TabsLayout() {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const { colors } = useTheme();
   const { shop, user } = useSession();
   return (
@@ -18,7 +19,7 @@ export default function TabsLayout() {
           tabBarActiveTintColor: colors.action,
           tabBarInactiveTintColor: colors.muted,
           tabBarStyle: { backgroundColor: colors.surface, borderTopColor: colors.border, minHeight: 60 },
-          tabBarLabelStyle: { fontSize: 12, fontWeight: "600", paddingBottom: 4 },
+          tabBarLabelStyle: { fontSize: 12, paddingBottom: 4, ...fontStyle(locale, "600") },
           tabBarItemStyle: { minHeight: 56 },
         }}
       >
@@ -27,7 +28,8 @@ export default function TabsLayout() {
         <Tabs.Screen name="stock" options={{ title: t("m.tab.stock"), tabBarLabel: t("m.tab.stockShort"), tabBarAccessibilityLabel: t("m.tab.stock"), tabBarIcon: ({ color, size }) => <Ionicons name="clipboard-outline" size={size} color={String(color)} /> }} />
         <Tabs.Screen name="products" options={{ title: t("m.tab.products"), tabBarIcon: ({ color, size }) => <Ionicons name="cube-outline" size={size} color={String(color)} /> }} />
         <Tabs.Screen name="reports" options={{ title: t("m.tab.reports"), tabBarIcon: ({ color, size }) => <Ionicons name="bar-chart-outline" size={size} color={String(color)} /> }} />
-        <Tabs.Screen name="more" options={{ title: t("m.tab.more"), tabBarIcon: ({ color, size }) => <Ionicons name="ellipsis-horizontal-circle-outline" size={size} color={String(color)} /> }} />
+        {/* Stock movements lives inside this tab's stack (Home links to it too): leaving it resets the tab, so More always opens on the settings page. */}
+        <Tabs.Screen name="more" options={{ popToTopOnBlur: true, title: t("m.tab.more"), tabBarIcon: ({ color, size }) => <Ionicons name="ellipsis-horizontal-circle-outline" size={size} color={String(color)} /> }} />
       </Tabs>
     </SyncProvider>
   );

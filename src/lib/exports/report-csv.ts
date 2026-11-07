@@ -1,8 +1,34 @@
-import { BASIS, CURRENCY_LABEL, generatedText, noteText, periodText, statusText, TAGLINE, TITLE } from "@/features/reports/labels";
+import { BASIS, BUCKET_LABEL, CURRENCY_LABEL, generatedText, hasPackagingSection, noteText, PACKAGING_BASIS, periodText, statusText, TAGLINE, TITLE, unitsText } from "@/features/reports/labels";
 import type { MonthlyReport } from "@/features/reports/report";
 import { toCsv } from "./csv";
 
 const n = (v: string | null): string => (v === null ? "" : String(Number(v)));
+
+/** The split of Estimated Sales by certainty of the packaging mix, and what was sold in packages. Empty when no product sells in packages. */
+function packagingRows(r: MonthlyReport): unknown[][] {
+  if (!hasPackagingSection(r)) return [];
+  const p = r.packaging;
+  return [
+    [],
+    ["Estimated Sales by certainty of packaging"],
+    ["Note", PACKAGING_BASIS],
+    ["basis", "product_days", "units_sold_inferred", "estimated_sales_lkr"],
+    ...(["known", "unknown", "standard"] as const).map((k) => [BUCKET_LABEL[k], p[k].productDays, unitsText(p[k].units), p[k].amount]),
+    ["Total (equals Estimated Sales)", "", "", p.total],
+    ...(p.knownProducts.length ? [
+      [],
+      ["Known packaging breakdown by product"],
+      ["product", "sku", "counted_in_unit", "days", "units_sold_inferred", "packages_sold", "estimated_sales_lkr"],
+      ...p.knownProducts.map((k) => [k.name, k.sku, k.unit, k.days, n(k.unitsSold), k.packages.map((x) => `${n(x.quantity)} ${x.name}`).join(" + "), k.amount]),
+    ] : []),
+    ...(p.daily.length ? [
+      [],
+      ["Days with a known breakdown"],
+      ["sales_date", "known_packaging_lkr", "estimated_lkr"],
+      ...p.daily.map((d) => [d.date, d.known, d.estimated]),
+    ] : []),
+  ];
+}
 
 /**
  * CSV: a labelled header block (so the file is self-explanatory when opened alone), then one row per product size.
@@ -21,6 +47,7 @@ export function reportToCsv(r: MonthlyReport): string {
     ["Estimated Sales (LKR)", r.totals.estimatedSales],
     ["Closing stock value at purchase cost (LKR)", r.totals.closingValue],
     ...r.notes.map((x) => ["Note", noteText(x)]),
+    ...packagingRows(r),
     [],
     [
       "category", "product", "product_code", "sku", "size", "counted_in_unit",

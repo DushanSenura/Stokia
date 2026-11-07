@@ -5,6 +5,7 @@ import { AlertTriangle, ArrowLeft, Clock, Loader2, Search } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { SalesBreakdownPanel } from "@/components/sales/sales-breakdown-panel";
 import { ItemCard } from "@/components/stock/item-card";
 import { Button, ButtonLink } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -66,6 +67,8 @@ export function MorningStockEntry(props: MorningStockProps) {
   const [restored, setRestored] = useState(false);
   const [deviceCopy, setDeviceCopy] = useState<LocalDraft | null>(null);
   const [online, setOnline] = useState(true);
+  // The headline total on the success screen follows the sales breakdown: saving boxes changes what the day is worth.
+  const [salesTotal, setSalesTotal] = useState<string | null>(null);
   const [done, setDone] = useState<{ sessionId: string; counted: number; alreadyConfirmed: boolean; sales?: SalesSummary } | null>(null);
   /** The count is saved on this device and waits for the server: NOT confirmed. */
   const [queued, setQueued] = useState(false);
@@ -338,7 +341,7 @@ export function MorningStockEntry(props: MorningStockProps) {
           <div className="mt-4 space-y-1">
             <p className="text-lg font-medium">{t("ms.successSales")}</p>
             <p className="text-sm text-muted">{t("ms.successTotal", { date: salesLabel })}</p>
-            <p className="num text-4xl font-semibold text-action dark:text-primary">{formatLkr(done.sales.estimatedTotal)}</p>
+            <p className="num text-4xl font-semibold text-action dark:text-primary">{formatLkr(salesTotal ?? done.sales.estimatedTotal)}</p>
             {Object.keys(done.sales.unitsByBaseUnit).length > 0 && (
               <p className="num text-sm text-muted">{Object.entries(done.sales.unitsByBaseUnit).map(([u, n]) => `${n} ${u}`).join(" · ")}</p>
             )}
@@ -351,6 +354,8 @@ export function MorningStockEntry(props: MorningStockProps) {
           <p className="mt-2 text-warning">{t("ms.successReview", { count: done.sales.needsReview })}</p>
         ) : null}
         {!isFirst && <p className="mx-auto mt-3 max-w-md text-sm text-muted">{t("sales.estimateNote")}</p>}
+        {/* Optional and collapsed: it loads only when opened, so the morning count itself stays uncluttered. */}
+        {!isFirst && done.sales && done.sales.calculated > 0 && <div className="mt-8"><SalesBreakdownPanel date={salesDate} onChanged={(day) => { if (day) setSalesTotal(day.estimatedTotal); }} /></div>}
         <div className="mt-8 flex flex-wrap justify-center gap-3">
           <ButtonLink href="/dashboard" size="lg">{t("nav.dashboard")}</ButtonLink>
           <ButtonLink href={`/stock-history/${done.sessionId}`} variant="secondary" size="lg">{t("ms.viewCount")}</ButtonLink>

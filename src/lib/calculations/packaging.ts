@@ -33,6 +33,11 @@ export interface PackUnit {
   /** How many `parent` units (or base units) one of this unit contains. */
   factor: Decimal.Value;
   isActive?: boolean;
+  /**
+   * False = this unit is not offered in stock counts (e.g. a unit that is only sold). It still takes part in the conversion chain
+   * (a carton made of boxes needs the box), so it stays in the list; only the entry form hides it. Missing means countable.
+   */
+  countable?: boolean;
 }
 
 export type DefinitionError =

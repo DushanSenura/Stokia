@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useCallback, useDeferredValue, useMemo, useRef, useState } from "react";
+import { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
 import { ActivityIndicator, FlatList, Pressable, ScrollView, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { buildPayloadItems, evaluateItem, summarize, type EntryItem } from "@/features/inventory/count-entry";
@@ -11,6 +11,7 @@ import { confirmOrQueue } from "@/lib/offline/confirm-flow";
 import { keyForRequest } from "@/lib/offline/idempotency";
 import type { MessageKey } from "@/i18n";
 import { useI18n } from "~/i18n";
+import { fontStyle } from "~/ui/fonts";
 import type { MobileKey } from "~/i18n/mobile-strings";
 import { api } from "~/lib/api";
 import { deviceLabel } from "~/lib/device";
@@ -46,6 +47,16 @@ export function StockScreen() {
   const [queuedDone, setQueuedDone] = useState(false);
   const [done, setDone] = useState<{ sales?: SalesSummary; alreadyConfirmed: boolean } | null>(null);
   const confirmKey = useRef<{ fingerprint: string; key: string } | null>(null);
+
+  // The headline total follows later changes to the day's figure (a sales breakdown saved on its own screen changes what the day is worth).
+  const revisionAtDone = useRef(sync.confirmedRevision);
+  useEffect(() => {
+    if (!done || sync.confirmedRevision === revisionAtDone.current) return;
+    revisionAtDone.current = sync.confirmedRevision;
+    let live = true;
+    void api.home(shop!.shopId).then((h) => { if (live && h.sales) setDone((d) => (d ? { ...d, sales: h.sales! } : d)); }).catch(() => undefined);
+    return () => { live = false; };
+  }, [done, sync.confirmedRevision, shop]);
 
   const items = useMemo(() => data?.items ?? [], [data]);
   const canWrite = !!data && (data.canWrite ?? true);
@@ -172,6 +183,10 @@ export function StockScreen() {
             </Card>
           ) : null}
           {data.previousDate !== null ? <AppText variant="small" tone="muted" style={{ textAlign: "center" }}>{t("sales.estimateNote")}</AppText> : null}
+          {/* Optional, on its own screen: the morning count itself stays uncluttered. Only after the server confirmed the count (never for a queued one). */}
+          {data.previousDate !== null && s && s.calculated > 0
+            ? <Button title={t("m.stock.addBreakdown")} variant="secondary" icon="cube-outline" onPress={() => router.navigate(`/more/sales-breakdown?date=${data.salesDate}`)} style={{ alignSelf: "stretch" }} />
+            : null}
           <Button title={t("m.tab.home")} onPress={() => router.navigate("/")} style={{ alignSelf: "stretch" }} />
         </ScrollView>
       </SafeAreaView>
@@ -257,7 +272,7 @@ export function StockScreen() {
       <TextInput
         accessibilityLabel={t("ms.search")} placeholder={t("ms.search")} placeholderTextColor={colors.muted} value={query} onChangeText={setQuery}
         autoCorrect={false} clearButtonMode="while-editing" returnKeyType="search"
-        style={{ minHeight: TOUCH, borderRadius: 14, borderWidth: 1.5, borderColor: colors.border, backgroundColor: colors.surface, color: colors.text, paddingHorizontal: 14, fontSize: 16 }}
+        style={{ minHeight: TOUCH, borderRadius: 14, borderWidth: 1.5, borderColor: colors.border, backgroundColor: colors.surface, color: colors.text, paddingHorizontal: 14, fontSize: 16, ...fontStyle(locale) }}
       />
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }}>
         {(["all", "notCounted", "attention"] as Filter[]).map((f) => (

@@ -75,6 +75,11 @@ describe("phone wording", () => {
     }
   });
 
+  it("every phone string is translated into Sinhala (a new English string needs its Sinhala too)", () => {
+    const untranslated = Object.keys(mobileEn).filter((k) => !(k in mobileSi));
+    expect(untranslated).toEqual([]);
+  });
+
   it("phone-only keys never collide with the web app's shared keys (so neither can shadow the other)", () => {
     for (const key of Object.keys(mobileEn)) expect(key in en, key).toBe(false);
     for (const key of Object.keys(mobileEn)) expect(key.startsWith("m."), key).toBe(true);

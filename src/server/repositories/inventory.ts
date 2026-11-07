@@ -69,7 +69,7 @@ interface VariantQueryRow {
 export async function loadEntryItems(supabase: Supa, shopId: string, countDate: string, timeZone: string) {
   const variants = await fetchAll<VariantQueryRow>((f, t) =>
     supabase.from("product_variants")
-      .select("id,sku,size_value,size_unit,base_inventory_unit,products!inner(name,product_code,categories(name)),packaging_units(id,variant_id,name,parent_unit_id,conversion_factor,base_unit_multiplier,is_active)")
+      .select("id,sku,size_value,size_unit,base_inventory_unit,products!inner(name,product_code,categories(name)),packaging_units(id,variant_id,name,parent_unit_id,conversion_factor,base_unit_multiplier,is_active,can_be_counted)")
       .eq("shop_id", shopId).eq("is_active", true).eq("products.is_active", true).order("id").range(f, t) as unknown as PromiseLike<{ data: VariantQueryRow[] | null; error: unknown }>);
 
   const prev = await getPreviousConfirmed(supabase, shopId, countDate);
@@ -213,7 +213,7 @@ export async function loadMovementTotals(supabase: Supa, shopId: string, openedA
 export interface SalesRow {
   variant_id: string; sales_date: string; inferred_base_units_sold: string | null; estimated_sales_amount: string | null;
   price_reference: string | null; calculation_status: "pending" | "calculated" | "needs_review" | "recalculated";
-  calculation_revision: number; pending_reason: string | null;
+  calculation_revision: number; pending_reason: string | null; packaging_status?: "unknown" | "known" | "stale";
   breakdown: { opening: number | null; closing: number | null; received: number; returns: number; damaged: number; other_out: number; adjustments: number } | null;
   product_variants: { sku: string; size_value: string | null; size_unit: string | null; base_inventory_unit: string; products: { name: string } | null } | null;
 }
@@ -221,7 +221,7 @@ export interface SalesRow {
 export async function getSalesForDate(supabase: Supa, shopId: string, date: string): Promise<SalesRow[]> {
   const rows = await fetchAll<SalesRow>((f, t) =>
     supabase.from("daily_sales")
-      .select("variant_id,sales_date,inferred_base_units_sold,estimated_sales_amount,price_reference,calculation_status,calculation_revision,pending_reason,breakdown,product_variants(sku,size_value,size_unit,base_inventory_unit,products(name))")
+      .select("variant_id,sales_date,inferred_base_units_sold,estimated_sales_amount,price_reference,calculation_status,calculation_revision,pending_reason,packaging_status,breakdown,product_variants(sku,size_value,size_unit,base_inventory_unit,products(name))")
       .eq("shop_id", shopId).eq("sales_date", date).order("variant_id").range(f, t) as unknown as PromiseLike<{ data: SalesRow[] | null; error: unknown }>);
   return rows.sort((a, b) => (a.product_variants?.products?.name ?? "").localeCompare(b.product_variants?.products?.name ?? "") || (a.product_variants?.sku ?? "").localeCompare(b.product_variants?.sku ?? ""));
 }

@@ -109,6 +109,43 @@ function Month({ month }: { month: string }) {
             <AppText variant="small" tone="muted">{t("sales.estimateNote")}</AppText>
           </Card>
 
+          {/* A report saved on the phone before this existed has no packaging block: it simply shows no section. */}
+          {report.packaging && (report.packaging.known.productDays > 0 || report.packaging.unknown.productDays > 0) ? (
+            <Card>
+              <AppText variant="heading">{t("rep.pk.title")}</AppText>
+              <AppText variant="small" tone="muted">{t("rep.pk.help")}</AppText>
+              {(["known", "unknown", "standard"] as const).map((b, i) => (
+                <View key={b} style={{ gap: 2, paddingTop: 8, borderTopWidth: i === 0 ? 0 : 1, borderTopColor: colors.border }}>
+                  <Row style={{ justifyContent: "space-between", alignItems: "flex-start" }}>
+                    <AppText style={{ fontWeight: "600", flex: 1 }}>{t(`rep.pk.${b}` as const)}</AppText>
+                    <AppText variant="num">{formatLkr(report.packaging[b].amount)}</AppText>
+                  </Row>
+                  <AppText variant="small" tone="muted">
+                    {t("rep.pk.days", { count: report.packaging[b].productDays })}
+                    {Object.entries(report.packaging[b].units).map(([u, n]) => ` · ${t("rep.pk.units", { units: `${num(n)} ${u}` })}`).join("")}
+                  </AppText>
+                  <AppText variant="small" tone="muted">{t(`rep.pk.${b}Help` as const)}</AppText>
+                </View>
+              ))}
+              <Divider />
+              <Line label={t("rep.pk.total")} value={formatLkr(report.packaging.total)} strong />
+              {report.packaging.knownProducts.length > 0 ? (
+                <>
+                  <AppText style={{ fontWeight: "600" }}>{t("rep.pk.breakdownTitle")}</AppText>
+                  {report.packaging.knownProducts.map((k) => (
+                    <View key={k.sku} style={{ gap: 2 }}>
+                      <Row style={{ justifyContent: "space-between", alignItems: "flex-start" }}>
+                        <AppText style={{ flex: 1 }}>{k.name}</AppText>
+                        <AppText variant="num">{formatLkr(k.amount)}</AppText>
+                      </Row>
+                      <AppText variant="small" tone="muted">{k.packages.map((x) => `${num(x.quantity)} ${x.name}`).join(" · ")}</AppText>
+                    </View>
+                  ))}
+                </>
+              ) : <AppText variant="small" tone="muted">{t("rep.pk.noneKnown")}</AppText>}
+            </Card>
+          ) : null}
+
           <Card>
             <AppText variant="heading">{t("m.reports.daily")}</AppText>
             {peak ? (

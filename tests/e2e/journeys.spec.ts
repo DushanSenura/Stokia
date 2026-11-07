@@ -145,6 +145,8 @@ test.describe("unhappy paths", () => {
       // the phone app's API
       "/api/v1/me", "/api/v1/home?shop=x", "/api/v1/morning-stock?shop=x", "/api/v1/products?shop=x", "/api/v1/reports?shop=x",
       "/api/v1/reports/2026-10?shop=x", "/api/v1/reports/2026-10/file?shop=x&format=pdf",
+      "/api/v1/movements?shop=x",
+      "/api/v1/sales-breakdown?shop=x&date=2026-11-06", "/api/v1/sales-breakdown/history?shop=x&variant=y&date=2026-11-06",
     ];
     for (const p of paths) {
       const res = await request.get(p);
@@ -152,7 +154,7 @@ test.describe("unhappy paths", () => {
       const body = await res.text();
       expect(body, p).not.toMatch(/at .*\.(ts|js):\d+|supabase\.co|stack/i);
     }
-    for (const p of ["/api/v1/counts", "/api/v1/variant-labels"]) {
+    for (const p of ["/api/v1/counts", "/api/v1/variant-labels", "/api/v1/movements", "/api/v1/movements/reverse", "/api/v1/sales-breakdown", "/api/v1/sales-breakdown/clear"]) {
       const res = await request.post(p, { data: { shopId: "x" } });
       expect(res.status(), p).toBe(401);
     }

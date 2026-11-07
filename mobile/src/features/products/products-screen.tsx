@@ -5,6 +5,7 @@ import type { CatalogItem } from "@/features/inventory/catalog-types";
 import { formatBusinessDate } from "@/lib/dates/business";
 import { formatLkr } from "@/lib/formatting/money";
 import { useI18n } from "~/i18n";
+import { fontStyle } from "~/ui/fonts";
 import { api } from "~/lib/api";
 import { useCachedLoad } from "~/lib/use-cached-load";
 import { whenText } from "~/lib/when";
@@ -49,7 +50,7 @@ export function ProductsScreen() {
       <TextInput
         accessibilityLabel={t("m.products.search")} placeholder={t("m.products.search")} placeholderTextColor={colors.muted} value={query} onChangeText={setQuery}
         autoCorrect={false} clearButtonMode="while-editing"
-        style={{ minHeight: TOUCH, borderRadius: 14, borderWidth: 1.5, borderColor: colors.border, backgroundColor: colors.surface, color: colors.text, paddingHorizontal: 14, fontSize: 16 }}
+        style={{ minHeight: TOUCH, borderRadius: 14, borderWidth: 1.5, borderColor: colors.border, backgroundColor: colors.surface, color: colors.text, paddingHorizontal: 14, fontSize: 16, ...fontStyle(locale) }}
       />
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }}>
         <Chip label={`${t("m.products.lowOnly")} (${lowTotal})`} active={lowOnly} onPress={() => setLowOnly((v) => !v)} />

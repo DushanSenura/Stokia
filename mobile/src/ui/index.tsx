@@ -1,7 +1,9 @@
 import { Ionicons } from "@expo/vector-icons";
-import { ActivityIndicator, Pressable, RefreshControl, ScrollView, Text, TextInput, View, type StyleProp, type TextInputProps, type TextStyle, type ViewStyle } from "react-native";
+import { ActivityIndicator, Pressable, RefreshControl, ScrollView, StyleSheet, Text, TextInput, View, type StyleProp, type TextInputProps, type TextStyle, type ViewStyle } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useI18n } from "~/i18n";
 import { useTheme } from "~/theme";
+import { fontStyle } from "./fonts";
 
 /** Comfortable touch targets: never smaller than 48 px. */
 export const TOUCH = 48;
@@ -29,9 +31,10 @@ export function Screen({ children, scroll = true, onRefresh, refreshing = false,
 
 export function AppText({ variant = "body", tone, style, children, ...rest }: {
   variant?: "title" | "heading" | "body" | "small" | "num" | "numLarge"; tone?: "muted" | "action" | "danger" | "warning" | "success";
-  style?: StyleProp<TextStyle>; children: React.ReactNode; numberOfLines?: number; accessibilityRole?: "header" | "text"; selectable?: boolean;
+  style?: StyleProp<TextStyle>; children: React.ReactNode; numberOfLines?: number; accessibilityRole?: "header" | "text" | "alert"; selectable?: boolean;
 }) {
   const { colors } = useTheme();
+  const { locale } = useI18n();
   const sizes: Record<string, TextStyle> = {
     title: { fontSize: 26, fontWeight: "700", lineHeight: 32 },
     heading: { fontSize: 18, fontWeight: "600", lineHeight: 24 },
@@ -41,7 +44,10 @@ export function AppText({ variant = "body", tone, style, children, ...rest }: {
     numLarge: { fontSize: 34, fontWeight: "700", fontVariant: ["tabular-nums"], lineHeight: 40 },
   };
   const color = tone === "muted" ? colors.muted : tone === "action" ? colors.action : tone === "danger" ? colors.danger : tone === "warning" ? colors.warning : tone === "success" ? colors.success : colors.text;
-  return <Text style={[{ color }, sizes[variant], style]} {...rest}>{children}</Text>;
+  // A bundled font has one family per weight, so the weight asked for (by the variant or by the caller's style) picks the family.
+  const merged = StyleSheet.flatten([{ color }, sizes[variant], style]) as TextStyle;
+  const { fontWeight, ...rest2 } = merged;
+  return <Text style={[rest2, fontStyle(locale, fontWeight)]} {...rest}>{children}</Text>;
 }
 
 export function Card({ children, style, tone }: { children: React.ReactNode; style?: StyleProp<ViewStyle>; tone?: "mint" }) {
@@ -58,6 +64,7 @@ export function Button({ title, onPress, variant = "primary", disabled, loading,
   style?: StyleProp<ViewStyle>; accessibilityLabel?: string; icon?: keyof typeof Ionicons.glyphMap;
 }) {
   const { colors } = useTheme();
+  const { locale } = useI18n();
   const bg = variant === "primary" ? colors.action : variant === "danger" ? colors.dangerSoft : variant === "secondary" ? colors.surface : "transparent";
   const fg = variant === "primary" ? colors.actionText : variant === "danger" ? colors.danger : colors.text;
   const off = disabled || loading;
@@ -71,7 +78,7 @@ export function Button({ title, onPress, variant = "primary", disabled, loading,
       }, style]}
     >
       {loading ? <ActivityIndicator color={fg} /> : icon ? <Ionicons name={icon} size={20} color={fg} /> : null}
-      <Text style={{ color: fg, fontSize: 16, fontWeight: "600", textAlign: "center", flexShrink: 1 }}>{title}</Text>
+      <Text style={[{ color: fg, fontSize: 16, textAlign: "center", flexShrink: 1 }, fontStyle(locale, "600")]}>{title}</Text>
     </Pressable>
   );
 }
@@ -82,6 +89,7 @@ const toneIcon: Record<Tone, keyof typeof Ionicons.glyphMap> = {
 
 export function Notice({ tone = "info", children, style }: { tone?: Tone; children: React.ReactNode; style?: StyleProp<ViewStyle> }) {
   const { colors } = useTheme();
+  const { locale } = useI18n();
   const bg = { neutral: colors.surfaceSoft, info: colors.infoSoft, success: colors.successSoft, warning: colors.warningSoft, danger: colors.dangerSoft }[tone];
   const fg = { neutral: colors.text, info: colors.info, success: colors.success, warning: colors.warning, danger: colors.danger }[tone];
   return (
@@ -90,32 +98,34 @@ export function Notice({ tone = "info", children, style }: { tone?: Tone; childr
       style={[{ backgroundColor: bg, borderRadius: 14, padding: 14, flexDirection: "row", gap: 10, alignItems: "flex-start" }, style]}
     >
       <Ionicons name={toneIcon[tone]} size={20} color={fg} style={{ marginTop: 1 }} />
-      <View style={{ flex: 1, gap: 6 }}>{typeof children === "string" ? <Text style={{ color: fg, fontSize: 15, lineHeight: 21 }}>{children}</Text> : children}</View>
+      <View style={{ flex: 1, gap: 6 }}>{typeof children === "string" ? <Text style={[{ color: fg, fontSize: 15, lineHeight: 21 }, fontStyle(locale)]}>{children}</Text> : children}</View>
     </View>
   );
 }
 
 export function Badge({ tone = "neutral", children }: { tone?: Tone; children: string }) {
   const { colors } = useTheme();
+  const { locale } = useI18n();
   const bg = { neutral: colors.surfaceSoft, info: colors.infoSoft, success: colors.successSoft, warning: colors.warningSoft, danger: colors.dangerSoft }[tone];
   const fg = { neutral: colors.muted, info: colors.info, success: colors.success, warning: colors.warning, danger: colors.danger }[tone];
-  return <View style={{ backgroundColor: bg, borderRadius: 999, paddingHorizontal: 10, paddingVertical: 4, alignSelf: "flex-start" }}><Text style={{ color: fg, fontSize: 13, fontWeight: "600" }}>{children}</Text></View>;
+  return <View style={{ backgroundColor: bg, borderRadius: 999, paddingHorizontal: 10, paddingVertical: 4, alignSelf: "flex-start" }}><Text style={[{ color: fg, fontSize: 13 }, fontStyle(locale, "600")]}>{children}</Text></View>;
 }
 
 export function Field({ label, error, style, ...input }: TextInputProps & { label: string; error?: string | null; style?: StyleProp<ViewStyle> }) {
   const { colors } = useTheme();
+  const { locale } = useI18n();
   return (
     <View style={[{ gap: 6 }, style]}>
-      <Text style={{ color: colors.text, fontSize: 15, fontWeight: "600" }}>{label}</Text>
+      <Text style={[{ color: colors.text, fontSize: 15 }, fontStyle(locale, "600")]}>{label}</Text>
       <TextInput
         accessibilityLabel={label} placeholderTextColor={colors.muted}
         style={{
           minHeight: TOUCH + 4, borderRadius: 14, borderWidth: 1.5, borderColor: error ? colors.danger : colors.border, backgroundColor: colors.surface,
-          color: colors.text, paddingHorizontal: 14, fontSize: 17,
+          color: colors.text, paddingHorizontal: 14, fontSize: 17, ...fontStyle(locale),
         }}
         {...input}
       />
-      {error ? <Text accessibilityRole="alert" style={{ color: colors.danger, fontSize: 14 }}>{error}</Text> : null}
+      {error ? <Text accessibilityRole="alert" style={[{ color: colors.danger, fontSize: 14 }, fontStyle(locale)]}>{error}</Text> : null}
     </View>
   );
 }

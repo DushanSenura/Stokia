@@ -57,7 +57,7 @@ Design review without a database: `STOKIA_PREVIEW=1 npm run dev`, then open `/pr
 - **Browsers:** Chromium, Firefox, WebKit; desktop, Android and iPhone viewports; no horizontal scroll from 320 px to 1440 px; no console errors or CSP violations.
 
 ## Phone app
-`mobile/` is the native Android and iPhone app (Expo). It shares the business rules with the web app and talks to it through `/api/v1`. Setup, running it, building installable files and its honest limits are in [mobile/README.md](mobile/README.md).
+`mobile/` is the native Android and iPhone app (Expo): Home, Morning Stock (with offline queue and conflict screen), Products, Reports (with sharing) and Stock movements (received, damaged, returns, adjustments, undo; entries made offline wait on the phone and are sent later) and the optional known-box-sales breakdown. It shares the business rules with the web app and talks to it through `/api/v1`. Setup, running it, building installable files and its honest limits are in [mobile/README.md](mobile/README.md).
 
 ## Documentation
 - [docs/architecture.md](docs/architecture.md): layers, security model, every phase's design decisions and trade-offs.
@@ -68,9 +68,3 @@ Design review without a database: `STOKIA_PREVIEW=1 npm run dev`, then open `/pr
 - Estimated Sales are only as good as the counts and recorded movements. Unrecorded loss is absorbed into the estimate, which is why every figure is labelled "Estimated".
 - Backup is a download, not a restore button.
 - Performance was measured on an in-process database, not Supabase under load.
-
-
-login
-
-Email: owner@stokia.local
-Password: Stokia-Local-2026!

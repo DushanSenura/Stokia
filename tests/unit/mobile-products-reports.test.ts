@@ -9,7 +9,7 @@ import { ApiForbidden, ApiUnreachable, createApi, safeFileName } from "../../mob
 
 const item = (over: Partial<CatalogItem> = {}): CatalogItem => ({
   variantId: "v", productName: "Chilli Powder", productCode: "CHL", category: "Spices", size: "250 g", sku: "CHL-250", baseUnit: "packet",
-  sellingPrice: "150.00", lastCounted: "30", lowStockLevel: "10", low: false, packaging: [], ...over,
+  sellingPrice: "150.00", lastCounted: "30", lowStockLevel: "10", low: false, packaging: [], units: [], ...over,
 });
 const catalog = [
   item({ variantId: "1", productName: "Chilli Powder", productCode: "CHL", size: "250 g", sku: "CHL-250", category: "Spices" }),

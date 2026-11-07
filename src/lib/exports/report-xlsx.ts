@@ -1,5 +1,5 @@
 import ExcelJS from "exceljs";
-import { BASIS, CURRENCY_LABEL, generatedText, monthTitle, noteText, periodText, statusText, TAGLINE } from "@/features/reports/labels";
+import { BASIS, BUCKET_LABEL, CURRENCY_LABEL, generatedText, hasPackagingSection, monthTitle, noteText, PACKAGING_BASIS, periodText, statusText, TAGLINE, unitsText } from "@/features/reports/labels";
 import type { MonthlyReport } from "@/features/reports/report";
 import { formatBusinessDate } from "@/lib/dates/business";
 import { sanitizeCell } from "./csv";
@@ -111,6 +111,37 @@ export async function reportToXlsx(r: MonthlyReport): Promise<Buffer> {
   });
   d.getColumn(2).numFmt = MONEY;
   fit(d);
+
+  /* ---- Packaging: known vs estimated ---- */
+  if (hasPackagingSection(r)) {
+    const k = wb.addWorksheet("Packaging", { views: [{ showGridLines: false }] });
+    const pk = r.packaging;
+    k.mergeCells("A1:F1");
+    k.getCell("A1").value = PACKAGING_BASIS; k.getCell("A1").alignment = { wrapText: true, vertical: "top" }; k.getCell("A1").font = { italic: true };
+    k.getCell("A1").fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFDDF2E7" } }; k.getRow(1).height = 78;
+    headerRow(k, 3, ["Basis", "Product-days", "Units sold (inferred, per unit)", "Estimated Sales (LKR)"]);
+    (["known", "unknown", "standard"] as const).forEach((b, i) => {
+      k.getRow(4 + i).values = [BUCKET_LABEL[b], pk[b].productDays, unitsText(pk[b].units), Number(pk[b].amount)];
+    });
+    k.getRow(7).values = ["Total (equals Estimated Sales)", "", "", Number(pk.total)]; k.getRow(7).font = { bold: true };
+    k.getColumn(4).numFmt = MONEY;
+    let row = 9;
+    if (pk.knownProducts.length) {
+      k.getCell(`A${row}`).value = "Known packaging breakdown by product"; k.getCell(`A${row}`).font = { bold: true, size: 12 }; row++;
+      headerRow(k, row, ["Product", "SKU", "Counted in", "Days", "Units sold (inferred)", "Packages sold", "Estimated Sales (LKR)"]); row++;
+      for (const x of pk.knownProducts) {
+        k.getRow(row).values = [txt(x.name), txt(x.sku), txt(x.unit), x.days, Number(x.unitsSold), txt(x.packages.map((e) => `${Number(e.quantity)} ${e.name}`).join(" + ")), Number(x.amount)];
+        k.getCell(row, 7).numFmt = MONEY; row++;
+      }
+      row++;
+    }
+    if (pk.daily.length) {
+      k.getCell(`A${row}`).value = "Days with a known breakdown"; k.getCell(`A${row}`).font = { bold: true, size: 12 }; row++;
+      headerRow(k, row, ["Sales date", "Known packaging (LKR)", "Estimated (LKR)"]); row++;
+      for (const d of pk.daily) { k.getRow(row).values = [d.date, Number(d.known), Number(d.estimated)]; k.getCell(row, 2).numFmt = MONEY; k.getCell(row, 3).numFmt = MONEY; row++; }
+    }
+    k.getColumn(1).width = 40; for (let c = 2; c <= 7; c++) k.getColumn(c).width = 22;
+  }
 
   /* ---- Low stock ---- */
   const l = wb.addWorksheet("Low stock", { views: [{ state: "frozen", ySplit: 1 }] });

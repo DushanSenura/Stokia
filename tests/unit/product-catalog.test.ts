@@ -50,6 +50,14 @@ describe("catalogItemFrom", () => {
     expect(catalogItemFrom(item({ units: [] }), "0").packaging).toEqual([]);
   });
 
+  it("carries the packaging units with their ids, so the phone can enter a quantity in bundles or cartons", () => {
+    const units = [{ id: "b", name: "Bundle", parentId: null, factor: 12 }, { id: "c", name: "Carton", parentId: "b", factor: "4" }];
+    expect(catalogItemFrom(item({ units }), "0").units).toEqual([
+      { id: "b", name: "Bundle", parentId: null, factor: "12" },
+      { id: "c", name: "Carton", parentId: "b", factor: "4" },
+    ]);
+  });
+
   it("a packaging definition that cannot be resolved is left out rather than shown wrong", () => {
     const broken = [{ id: "a", name: "A", parentId: "a", factor: 2 }]; // a unit that contains itself
     expect(catalogItemFrom(item({ units: broken }), "0").packaging).toEqual([]);

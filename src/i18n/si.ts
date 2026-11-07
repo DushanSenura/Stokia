@@ -1,5 +1,6 @@
 import type { MessageKey } from "./en";
 import { siCore } from "./si-core";
+import { siSales } from "./si-sales";
 
 /**
  * Sinhala translations. Partial by design: any missing key falls back to English.
@@ -98,4 +99,4 @@ const siBase: Partial<Record<MessageKey, string>> = {
 };
 
 /** Base translations overlaid with the core-workflow set (si-core.ts wins where both define a key). */
-export const si: Partial<Record<MessageKey, string>> = { ...siBase, ...siCore };
+export const si: Partial<Record<MessageKey, string>> = { ...siBase, ...siCore, ...siSales };

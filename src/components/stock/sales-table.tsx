@@ -38,6 +38,8 @@ export function SalesTable({ rows, t }: { rows: SalesRow[]; t: Translator }) {
                 <td className="px-3 py-3 font-semibold">
                   {r.estimated_sales_amount !== null ? formatLkr(r.estimated_sales_amount)
                     : r.calculation_status === "calculated" || r.calculation_status === "recalculated" ? <span className="font-normal text-muted">{t("sales.noPrice")}</span> : "—"}
+                  {r.packaging_status === "known" && <Badge tone="success" className="mt-1 block w-fit font-normal">{t("sb.status.known")}</Badge>}
+                  {r.packaging_status === "stale" && <Badge tone="warning" className="mt-1 block w-fit font-normal">{t("sb.status.stale")}</Badge>}
                 </td>
                 <td className="px-3 py-3">
                   <Badge tone={tone[r.calculation_status]}>{t(`sales.status.${r.calculation_status}` as MessageKey)}</Badge>

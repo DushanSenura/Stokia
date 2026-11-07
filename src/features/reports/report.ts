@@ -12,6 +12,7 @@ import Decimal from "decimal.js";
 import { aggregateCategories, aggregateProducts, buildSeries, type CategoryAgg, type ProductAgg, type SeriesPoint, type VariantSalesRow } from "@/features/analytics/aggregate";
 import { aggregateDays, type DaySummaryRow, type MonthStatus } from "@/features/dashboard/summary";
 import { addMonths, firstOfMonth, lastOfMonth, monthOf } from "@/lib/dates/business";
+import { buildPackagingReport, emptyPackagingReport, type PackagingReport, type PackagingRow } from "./packaging-report";
 import { sizeLabel } from "@/lib/formatting/units";
 
 export interface ReportVariantRow {
@@ -44,7 +45,7 @@ export interface StockUnitSummary {
 
 export type ReportNoteCode =
   | "in_progress" | "waiting_closing_count" | "recalculated" | "days_review" | "days_pending"
-  | "without_opening" | "without_closing" | "uncosted";
+  | "without_opening" | "without_closing" | "uncosted" | "packaging_stale";
 export interface ReportNote { code: ReportNoteCode; params: Record<string, string | number> }
 
 export type ExportFormat = "pdf" | "xlsx" | "csv" | "print";
@@ -73,6 +74,8 @@ export interface MonthlyReport {
   products: ProductAgg[];
   categories: CategoryAgg[];
   daily: SeriesPoint[];
+  /** Estimated Sales split by how certain the packaging mix is: known / unknown / standard. Empty when no product has sellable packaging. */
+  packaging: PackagingReport;
   lowStock: { name: string; size: string; sku: string; unit: string; quantity: string; threshold: string }[];
   notes: ReportNote[];
 }
@@ -88,6 +91,8 @@ export interface BuildInput {
   fingerprint: string;
   exports: ExportRecord[];
   lowStock: MonthlyReport["lowStock"];
+  /** Rows of `monthly_packaging_report`. Optional: reports built without them simply have no packaging section. */
+  packaging?: PackagingRow[];
 }
 
 export function reportStatus(month: string, today: string, hasClosingCount: boolean): MonthlyReport["status"] {
@@ -168,6 +173,8 @@ export function buildMonthlyReport(i: BuildInput): MonthlyReport {
   if (noOpen > 0) notes.push({ code: "without_opening", params: { count: noOpen } });
   if (noClose > 0) notes.push({ code: "without_closing", params: { count: noClose } });
   if (totals.uncostedVariants > 0) notes.push({ code: "uncosted", params: { count: totals.uncostedVariants } });
+  const packaging = i.packaging ? buildPackagingReport(i.packaging) : emptyPackagingReport();
+  if (packaging.staleDays > 0) notes.push({ code: "packaging_stale", params: { count: packaging.staleDays } });
 
   const from = firstOfMonth(i.month), to = lastOfMonth(i.month);
   return {
@@ -178,11 +185,15 @@ export function buildMonthlyReport(i: BuildInput): MonthlyReport {
     fingerprint: i.fingerprint, generatedAt: i.generatedAt, totals, stock, variants,
     products: aggregateProducts(asSales), categories: aggregateCategories(asSales),
     daily: buildSeries(aggregateDays(i.daily), from, to, "day"),
+    packaging,
     lowStock: i.lowStock, notes,
   };
 }
 
 /** Summary stored with each export record (what the report said when it was exported). */
 export function exportTotals(r: MonthlyReport) {
-  return { estimatedSales: r.totals.estimatedSales, closingValue: r.totals.closingValue, status: r.status.kind, recalculated: r.recalculated, variants: r.variants.length };
+  return {
+    estimatedSales: r.totals.estimatedSales, closingValue: r.totals.closingValue, status: r.status.kind, recalculated: r.recalculated, variants: r.variants.length,
+    estimatedSalesByCertainty: { known: r.packaging.known.amount, unknown: r.packaging.unknown.amount, standard: r.packaging.standard.amount },
+  };
 }

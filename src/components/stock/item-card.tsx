@@ -37,7 +37,7 @@ function ItemCardImpl({ item, values, state, disabled, onChange }: Props) {
     const def = resolveUnits(item.units, item.baseUnit);
     const ordered = def.ok ? [...item.units].sort((a, b) => def.multipliers.get(b.id)!.comparedTo(def.multipliers.get(a.id)!)) : item.units;
     return [
-      ...ordered.map((u) => ({
+      ...ordered.filter((u) => u.countable !== false).map((u) => ({
         key: u.id, packaged: true,
         label: u.name,
         hint: def.ok ? `× ${def.multipliers.get(u.id)!.toString()}` : "",

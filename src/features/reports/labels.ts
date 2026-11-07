@@ -27,8 +27,21 @@ export function noteText(n: ReportNote): string {
     case "without_opening": return `Products with no opening count: ${p.count}. They are left out of the opening stock totals.`;
     case "without_closing": return `Products with no closing count: ${p.count}. They are left out of the closing stock totals.`;
     case "uncosted": return `Products in stock with no purchase cost: ${p.count}. They are not in the closing stock value, so it is a minimum.`;
+    case "packaging_stale": return `Product-days with a box breakdown that no longer fits after a count or movement changed: ${p.count}. They are valued as estimates with unknown packaging until the breakdown is confirmed or changed.`;
   }
 }
+
+/** Wording for the split of Estimated Sales by certainty of the packaging mix. */
+export const PACKAGING_BASIS =
+  "Estimated Sales are split by how certain the packaging mix is. KNOWN: box or pack sales were entered, so each day uses the package prices in force on that day. " +
+  "ESTIMATED, PACKAGING UNKNOWN: the product can be sold in packages but no box sales were entered, so the whole inferred quantity is valued at the single-unit price. " +
+  "STANDARD: the product has no sellable packaging. The three groups add up to Estimated Sales and are never blended into one unlabelled figure.";
+export const BUCKET_LABEL = { known: "Known packaging breakdown", unknown: "Estimated, packaging unknown", standard: "Products without sellable packaging" } as const;
+
+/** True when the report has anything to say about packaging (some product can be sold in packages, or a breakdown was recorded). */
+export const hasPackagingSection = (r: MonthlyReport) => r.packaging.known.productDays > 0 || r.packaging.unknown.productDays > 0;
+
+export const unitsText = (units: Record<string, string>) => Object.entries(units).map(([u, q]) => `${Number(q)} ${u}`).join(" + ") || "-";
 
 export function periodText(r: MonthlyReport): string {
   return `${formatBusinessDate(r.period.from)} to ${formatBusinessDate(r.period.to)}`;

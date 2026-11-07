@@ -16,6 +16,8 @@ export interface CatalogItem {
   low: boolean;
   /** How the packaging nests, e.g. "1 Carton = 4 Bundle = 48 packet". */
   packaging: string[];
+  /** The active packaging units (what the phone needs to enter a quantity in bundles, cartons...). `factor` = how many of the parent (or base) unit one contains. */
+  units: { id: string; name: string; parentId: string | null; factor: string }[];
 }
 
 export interface ProductCatalog {

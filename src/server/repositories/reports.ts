@@ -1,6 +1,7 @@
 import "server-only";
 import { createClient } from "@/lib/supabase/server";
 import type { DaySummaryRow } from "@/features/dashboard/summary";
+import type { PackagingRow } from "@/features/reports/packaging-report";
 import { buildMonthlyReport, type ExportFormat, type ExportRecord, type MonthlyReport, type ReportIndexRow, type ReportVariantRow } from "@/features/reports/report";
 import { addMonths, firstOfMonth, isMonth, lastOfMonth, monthOf } from "@/lib/dates/business";
 import { shopLocalDate } from "@/lib/dates/format";
@@ -19,8 +20,9 @@ export async function loadMonthlyReport(supabase: Supa, shop: ShopInfo, month: s
   const today = shopLocalDate(now, shop.timezone);
   const closingDate = firstOfMonth(addMonths(month, 1));
 
-  const [rows, dailyRes, closingRes, fpRes, exportsRes, lowRes] = await Promise.all([
+  const [rows, packagingRows, dailyRes, closingRes, fpRes, exportsRes, lowRes] = await Promise.all([
     fetchAll<ReportVariantRow>((f, t) => supabase.rpc("monthly_report_variants", { p_shop: shop.shopId, p_month: month }).range(f, t) as unknown as PromiseLike<{ data: ReportVariantRow[] | null; error: unknown }>, 20000),
+    fetchAll<PackagingRow>((f, t) => supabase.rpc("monthly_packaging_report", { p_shop: shop.shopId, p_month: month }).range(f, t) as unknown as PromiseLike<{ data: PackagingRow[] | null; error: unknown }>, 50000),
     supabase.rpc("analytics_daily", { p_shop: shop.shopId, p_from: firstOfMonth(month), p_to: lastOfMonth(month) }),
     supabase.from("stock_count_sessions").select("id").eq("shop_id", shop.shopId).in("status", ["confirmed", "corrected"]).eq("business_date", closingDate).maybeSingle(),
     supabase.rpc("monthly_report_fingerprint", { p_shop: shop.shopId, p_month: month }),
@@ -35,7 +37,7 @@ export async function loadMonthlyReport(supabase: Supa, shop: ShopInfo, month: s
   return buildMonthlyReport({
     month, today, shopName: shop.shopName, timezone: shop.timezone, generatedAt: now.toISOString(),
     rows, daily: (dailyRes.data ?? []) as DaySummaryRow[], hasClosingCount: !!closingRes.data,
-    fingerprint: String(fpRes.data ?? ""), exports: (exportsRes.data ?? []) as ExportRecord[], lowStock: low,
+    fingerprint: String(fpRes.data ?? ""), packaging: packagingRows, exports: (exportsRes.data ?? []) as ExportRecord[], lowStock: low,
   });
 }
 

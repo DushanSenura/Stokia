@@ -1,4 +1,5 @@
 import Constants from "expo-constants";
+import { useRouter } from "expo-router";
 import { View } from "react-native";
 import { LOCALE_LABELS, LOCALES, type MessageKey } from "@/i18n";
 import { SyncBanner } from "~/features/sync/sync-banner";
@@ -18,11 +19,13 @@ export default function More() {
   const { t, locale, setLocale } = useI18n();
   const { pref, setPref } = useTheme();
   const { shop, user, signOut } = useSession();
-  const { entries } = useSync();
+  const { entries, movementEntries } = useSync();
+  const router = useRouter();
 
   const confirmSignOut = async () => {
     // Counts waiting to be sent exist only on this phone: signing out deletes them, so say so.
-    const message = entries.length > 0 ? t("sync.signOutWarning", { count: entries.length }) : t("m.more.signOutTitle");
+    const message = movementEntries.length > 0 ? t("m.more.signOutWarning", { counts: entries.length, movements: movementEntries.length })
+      : entries.length > 0 ? t("sync.signOutWarning", { count: entries.length }) : t("m.more.signOutTitle");
     if (await confirmDialog(t("common.signOut"), message, t("common.signOut"), t("common.cancel"))) await signOut();
   };
 
@@ -55,6 +58,7 @@ export default function More() {
         <SyncBanner />
       </Card>
 
+      <Button title={t("m.more.movements")} variant="secondary" icon="swap-vertical-outline" onPress={() => router.navigate("/more/movements")} />
       <Button title={t("common.signOut")} variant="secondary" icon="log-out-outline" onPress={() => void confirmSignOut()} />
       <AppText variant="small" tone="muted" style={{ textAlign: "center" }}>{t("m.more.version", { version: Constants.expoConfig?.version ?? "" })}</AppText>
     </Screen>

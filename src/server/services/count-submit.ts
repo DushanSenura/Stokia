@@ -64,7 +64,7 @@ export async function buildCountLines(ctx: CountContext, items: CountInput["item
   for (let i = 0; i < ids.length; i += 100) {
     const { data, error } = await ctx.supabase
       .from("product_variants")
-      .select("id,base_inventory_unit,packaging_units(id,variant_id,name,parent_unit_id,conversion_factor,base_unit_multiplier,is_active)")
+      .select("id,base_inventory_unit,packaging_units(id,variant_id,name,parent_unit_id,conversion_factor,base_unit_multiplier,is_active,can_be_counted)")
       .eq("shop_id", ctx.shopId).in("id", ids.slice(i, i + 100));
     if (error) throw new Error("QUERY_FAILED");
     for (const v of (data ?? []) as unknown as { id: string; base_inventory_unit: string; packaging_units: PackagingUnitRow[] }[]) {
@@ -78,6 +78,8 @@ export async function buildCountLines(ctx: CountContext, items: CountInput["item
     const v = variants.get(item.variantId);
     if (!v) { itemErrors[item.variantId] = "unknown_unit"; continue; } // not in this shop
     const units = v.units.filter((u) => u.is_active).map(toPackUnit);
+    // A unit that is not used in stock counts is refused even if an old draft or a modified client sends it.
+    if (item.entries.some((e) => e.unitId && units.find((u) => u.id === e.unitId)?.countable === false)) { itemErrors[item.variantId] = "unknown_unit"; continue; }
     const r = normalizePackagingQuantity(item.entries.map((e) => ({ unitId: e.unitId, quantity: e.quantity })), units, v.base);
     if (!r.ok) { itemErrors[item.variantId] = r.code; continue; }
     if (!r.counted) continue; // blank = not counted

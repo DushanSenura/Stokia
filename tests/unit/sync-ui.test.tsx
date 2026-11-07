@@ -210,7 +210,10 @@ describe("conflict: another device saved a different draft", () => {
     await userEvent.click(await screen.findByRole("button", { name: "Review and decide" }));
     await userEvent.click(await screen.findByRole("button", { name: "Use my numbers" }));
     expect(await screen.findByText(/does not match what is already saved/)).toBeInTheDocument();
-    expect((await listQueued(SCOPE))[0]).toMatchObject({ state: "conflict", conflict: { server: { revision: 9 } } });
+    // The text can already be on screen from the FIRST conflict, so wait for the second answer to be stored. Asserting at once raced with
+    // the send, and a send still running when this test ended called `confirm` during the next test (it failed only under load).
+    await waitFor(async () => expect((await listQueued(SCOPE))[0]).toMatchObject({ state: "conflict", conflict: { server: { revision: 9 } } }));
+    await waitFor(() => expect(confirm).toHaveBeenCalledTimes(1));
   });
 });
 

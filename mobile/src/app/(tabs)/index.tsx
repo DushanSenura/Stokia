@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState } from "react";
 import { ActivityIndicator, View } from "react-native";
 import { formatBusinessDate } from "@/lib/dates/business";
 import { formatLkr } from "@/lib/formatting/money";
+import { MovementsLink } from "~/features/movements/movements-screen";
 import { SyncBanner } from "~/features/sync/sync-banner";
 import { useI18n } from "~/i18n";
 import { api } from "~/lib/api";
@@ -83,6 +84,8 @@ export default function Home() {
               : <Button title={status === "draft" ? t("m.home.continue") : t("m.home.enter")} icon="clipboard-outline" onPress={() => router.navigate("/stock")} />}
           </Card>
 
+          <MovementsLink />
+
           {sales && data.salesDate ? (
             <Card tone="mint">
               <AppText variant="small" tone="muted">{t("m.home.salesFor", { date: formatBusinessDate(data.salesDate, locale) })}</AppText>
@@ -98,6 +101,7 @@ export default function Home() {
               {sales.needsReview > 0 ? <AppText variant="small" tone="warning">{t("ms.successReview", { count: sales.needsReview })}</AppText> : null}
               {sales.pending > 0 ? <AppText variant="small" tone="muted">{t("ms.successPending", { count: sales.pending })}</AppText> : null}
               <AppText variant="small" tone="muted">{t("sales.estimateNote")}</AppText>
+              {sales.calculated > 0 ? <Button title={t("m.home.breakdown")} variant="secondary" icon="cube-outline" onPress={() => router.navigate(`/more/sales-breakdown?date=${data.salesDate}`)} /> : null}
             </Card>
           ) : <Notice tone="info">{t("m.home.noSales")}</Notice>}
         </>

@@ -3,6 +3,7 @@ import { TextInput, View } from "react-native";
 import { BASE_KEY, describeQuantity, evaluateItem, type EntryItem, type FieldValues } from "@/features/inventory/count-entry";
 import { formatLkr } from "@/lib/formatting/money";
 import { useI18n } from "~/i18n";
+import { fontStyle } from "~/ui/fonts";
 import { useTheme } from "~/theme";
 import { AppText, Badge, Card, Notice, TOUCH } from "~/ui";
 
@@ -11,12 +12,12 @@ import { AppText, Badge, Card, Notice, TOUCH } from "~/ui";
  * since the last count and the estimated sales update as the person types. Blank means "not counted", never zero.
  */
 function ItemCardBase({ item, values, editable, onChange }: { item: EntryItem; values: FieldValues | undefined; editable: boolean; onChange: (variantId: string, key: string, value: string) => void }) {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const { colors } = useTheme();
   const state = useMemo(() => evaluateItem(item, values ?? {}), [item, values]);
 
   const fields = [
-    ...item.units.map((u) => ({ key: u.id, label: u.name, integer: true })),
+    ...item.units.filter((u) => u.countable !== false).map((u) => ({ key: u.id, label: u.name, integer: true })),
     { key: BASE_KEY, label: t("m.stock.loose", { unit: item.baseUnit }), integer: false },
   ];
   const title = [item.productName, item.sizeLabel].filter(Boolean).join(" · ");
@@ -53,7 +54,7 @@ function ItemCardBase({ item, values, editable, onChange }: { item: EntryItem; v
               selectTextOnFocus
               style={{
                 minHeight: TOUCH + 8, borderRadius: 14, borderWidth: 1.5, borderColor: colors.border, backgroundColor: editable ? colors.bg : colors.surfaceSoft,
-                color: colors.text, fontSize: 24, fontWeight: "600", textAlign: "center", fontVariant: ["tabular-nums"],
+                color: colors.text, fontSize: 24, ...fontStyle(locale, "600"), textAlign: "center", fontVariant: ["tabular-nums"],
               }}
             />
           </View>

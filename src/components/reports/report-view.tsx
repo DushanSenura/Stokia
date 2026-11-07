@@ -3,7 +3,7 @@ import { ReportActions } from "@/components/reports/report-actions";
 import { ButtonLink } from "@/components/ui/button";
 import { Alert, Badge } from "@/components/ui/feedback";
 import { unitList } from "@/features/dashboard/summary";
-import { generatedText } from "@/features/reports/labels";
+import { generatedText, hasPackagingSection } from "@/features/reports/labels";
 import { noteSentence } from "@/features/reports/note-text";
 import type { MonthlyReport } from "@/features/reports/report";
 import { formatBusinessDate, formatMonth } from "@/lib/dates/business";
@@ -94,6 +94,58 @@ export function ReportView({ report: r, t, locale, timezone }: { report: Monthly
           </div>
         </div>
       </Section>
+
+      {hasPackagingSection(r) && (
+        <Section id="pk" title={t("rep.pk.title")} sub={t("rep.pk.help")}>
+          <div className="grid gap-4 sm:grid-cols-3">
+            {(["known", "unknown", "standard"] as const).map((b) => (
+              <div key={b} className={cn("rounded-[var(--radius-card)] border bg-surface p-5", b === "known" ? "border-success/50" : "border-border")}>
+                <p className="text-sm font-medium">{t(`rep.pk.${b}` as MessageKey)}</p>
+                <p className="num text-2xl font-semibold">{money(r.packaging[b].amount)}</p>
+                <p className="num text-xs text-muted">
+                  {t("rep.pk.days", { count: r.packaging[b].productDays })}
+                  {unitList(r.packaging[b].units).length > 0 && <> · {unitList(r.packaging[b].units).map((u) => t("rep.pk.units", { units: `${q(u.qty)} ${u.unit}` })).join(" · ")}</>}
+                </p>
+                <p className="mt-1 text-xs text-muted">{t(`rep.pk.${b}Help` as MessageKey)}</p>
+              </div>
+            ))}
+          </div>
+          <p className="num text-sm text-muted">{t("rep.pk.total")}: <span className="font-semibold text-foreground">{money(r.packaging.total)}</span></p>
+
+          {r.packaging.knownProducts.length > 0 ? (
+            <>
+              <h3 className="pt-2 font-semibold">{t("rep.pk.breakdownTitle")}</h3>
+              <TableWrap min="36rem">
+                <thead className="border-b border-border text-muted"><tr><Th>{t("rep.pk.col.product")}</Th><Th right>{t("rep.pk.col.sold")}</Th><Th>{t("rep.pk.col.mix")}</Th><Th right>{t("rep.pk.col.amount")}</Th></tr></thead>
+                <tbody>
+                  {r.packaging.knownProducts.map((k) => (
+                    <tr key={k.sku} className="border-t border-border align-top">
+                      <td className="px-3 py-2.5 font-medium">{k.name}<br /><span className="font-normal text-muted">{k.sku}</span></td>
+                      <td className="px-3 py-2.5 text-right">{q(k.unitsSold)} {k.unit}</td>
+                      <td className="px-3 py-2.5">{k.packages.map((x) => `${q(x.quantity)} ${x.name}`).join(" · ")}</td>
+                      <td className="whitespace-nowrap px-3 py-2.5 text-right font-semibold">{money(k.amount)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </TableWrap>
+              {r.packaging.daily.length > 0 && (
+                <TableWrap min="26rem">
+                  <thead className="border-b border-border text-muted"><tr><Th>{t("rep.col.date")}</Th><Th right>{t("rep.pk.daily.known")}</Th><Th right>{t("rep.pk.daily.estimated")}</Th></tr></thead>
+                  <tbody>
+                    {r.packaging.daily.map((d) => (
+                      <tr key={d.date} className="border-t border-border">
+                        <td className="px-3 py-2">{formatBusinessDate(d.date, locale, { weekday: "short", day: "numeric", month: "short" })}</td>
+                        <td className="whitespace-nowrap px-3 py-2 text-right font-semibold">{money(d.known)}</td>
+                        <td className="whitespace-nowrap px-3 py-2 text-right">{money(d.estimated)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </TableWrap>
+              )}
+            </>
+          ) : <p className="rounded-2xl bg-surface-soft p-4 text-sm text-muted">{t("rep.pk.noneKnown")}</p>}
+        </Section>
+      )}
 
       <Section id="stock" title={t("rep.section.stock")} sub={t("rep.section.stockSub")}>
         <TableWrap min="52rem">

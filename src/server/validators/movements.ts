@@ -22,6 +22,9 @@ export const movementSchema = z.object({
   quantity: qty,
   when: z.enum(["now", "before_count", "custom"]).default("now"),
   effective_local: opt(z.string().trim().max(16)),
+  // The morning ("YYYY-MM-DD") a "before the count" movement belongs to. The web form never sends it (it means today); a movement the
+  // phone saved offline and sends later names the day it was entered, so a late send cannot attach itself to a different morning's count.
+  count_date: opt(z.string().trim().regex(/^\d{4}-\d{2}-\d{2}$/, "mv.err.time")),
   reason: opt(z.string().trim().max(300)),
   reference: opt(z.string().trim().max(120)),
   supplier: opt(z.string().trim().max(120)),

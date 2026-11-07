@@ -6,6 +6,7 @@ import { I18nProvider, useI18n } from "~/i18n";
 import { SessionProvider, useSession } from "~/providers/session";
 import { ThemeProvider, useTheme } from "~/theme";
 import { AppText, Button, Notice } from "~/ui";
+import { useFontsReady } from "~/ui/fonts";
 
 export default function RootLayout() {
   return (
@@ -25,7 +26,8 @@ export default function RootLayout() {
 function Gate() {
   const { status } = useSession();
   const { colors } = useTheme();
-  if (status === "loading") {
+  const fontsReady = useFontsReady(); // gives up after 4 s, so a font problem can never keep anyone out
+  if (status === "loading" || !fontsReady) {
     return <View style={{ flex: 1, backgroundColor: colors.bg, alignItems: "center", justifyContent: "center" }}><ActivityIndicator size="large" color={colors.action} /></View>;
   }
   if (status === "problem") return <Problem />;

@@ -39,3 +39,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# test output and caches (generated, never committed)
+/test-results/
+/playwright-report/
+.expo/
+mobile/.expo/

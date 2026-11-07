@@ -1,6 +1,6 @@
 import { jsPDF } from "jspdf";
 import autoTable, { type CellDef } from "jspdf-autotable";
-import { BASIS, CURRENCY_LABEL, generatedText, monthTitle, noteText, periodText, statusText, TAGLINE } from "@/features/reports/labels";
+import { BASIS, BUCKET_LABEL, CURRENCY_LABEL, generatedText, hasPackagingSection, monthTitle, noteText, PACKAGING_BASIS, periodText, statusText, TAGLINE, unitsText } from "@/features/reports/labels";
 import type { MonthlyReport } from "@/features/reports/report";
 import { formatBusinessDate } from "@/lib/dates/business";
 import { formatLkr } from "@/lib/formatting/money";
@@ -93,6 +93,26 @@ export function reportToPdf(r: MonthlyReport): Uint8Array {
   if (r.notes.length) {
     heading("Notes");
     table({ theme: "plain", head: [], body: r.notes.map((n) => [pdfSafe(`- ${noteText(n)}`)]), styles: { fontSize: 8.5, cellPadding: 2 } });
+  }
+
+  // ---- Estimated Sales by certainty of the packaging mix ----
+  if (hasPackagingSection(r)) {
+    const p = r.packaging;
+    heading("Estimated Sales by certainty of packaging", PACKAGING_BASIS.slice(0, 140) + "...");
+    table({
+      head: [["Basis", "Product-days", "Units sold (inferred)", "Estimated Sales (Rs.)"]],
+      body: [
+        ...(["known", "unknown", "standard"] as const).map((b) => [pdfSafe(BUCKET_LABEL[b]), right(String(p[b].productDays)), pdfSafe(unitsText(p[b].units)), right(money(p[b].amount))]),
+        [{ content: "Total (equals Estimated Sales)", styles: { fontStyle: "bold" } }, "", "", { content: pdfSafe(money(p.total)), styles: { fontStyle: "bold", halign: "right" } }],
+      ],
+    });
+    if (p.knownProducts.length) {
+      heading("Known packaging breakdown by product", "Packages entered by the owner; the rest of each day's inferred sales is valued per single unit.");
+      table({
+        head: [["Product", "SKU", "Days", "Units sold", "Packages sold", "Estimated Sales (Rs.)"]],
+        body: p.knownProducts.map((k) => [pdfSafe(k.name), pdfSafe(k.sku), right(String(k.days)), right(`${q(k.unitsSold)} ${pdfSafe(k.unit)}`), pdfSafe(k.packages.map((x) => `${q(x.quantity)} ${x.name}`).join(" + ")), right(money(k.amount))]),
+      });
+    }
   }
 
   // ---- stock by unit ----
