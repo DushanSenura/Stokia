@@ -1,0 +1,59 @@
+name: CI
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      # Placeholders: the build needs the variables to exist (the Content-Security-Policy is derived from the URL).
+      NEXT_PUBLIC_SUPABASE_URL: https://ci-placeholder.supabase.co
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ci-placeholder-anon-key
+      NEXT_PUBLIC_SITE_URL: http://localhost:3100
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npm test            # unit, component and database tests (real migrations on in-process Postgres)
+      - run: npx playwright install --with-deps chromium firefox webkit
+      - run: npm run e2e:all     # builds the production app, then Chrome, Firefox, Safari engines, desktop + mobile
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: test-results/
+
+  # The phone app (Expo). Proves it type-checks, lints, and that Metro can bundle it for both phone platforms
+  # (Hermes bytecode; no Mac or emulator needed for this). It does not run on a device.
+  mobile:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: mobile
+    env:
+      EXPO_PUBLIC_API_URL: https://ci-placeholder.example
+      EXPO_PUBLIC_SUPABASE_URL: https://ci-placeholder.supabase.co
+      EXPO_PUBLIC_SUPABASE_ANON_KEY: ci-placeholder-anon-key
+      EXPO_PUBLIC_SITE_URL: https://ci-placeholder.example
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: mobile/package-lock.json
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npx expo lint
+      - run: npx expo-doctor
+      - run: npx expo export --platform android --output-dir /tmp/stokia-android
+      - run: npx expo export --platform ios --output-dir /tmp/stokia-ios

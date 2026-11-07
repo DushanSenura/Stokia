@@ -1,0 +1,38 @@
+{
+  "cli": { "version": ">= 16.0.0", "appVersionSource": "remote" },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal",
+      "android": { "buildType": "apk" },
+      "ios": { "simulator": false },
+      "env": {
+        "EXPO_PUBLIC_API_URL": "http://YOUR-COMPUTER-LAN-IP:3000",
+        "EXPO_PUBLIC_SUPABASE_URL": "http://YOUR-COMPUTER-LAN-IP:54321",
+        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "YOUR-LOCAL-ANON-KEY",
+        "EXPO_PUBLIC_SITE_URL": "http://YOUR-COMPUTER-LAN-IP:3000"
+      }
+    },
+    "preview": {
+      "distribution": "internal",
+      "android": { "buildType": "apk" },
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://YOUR-STOKIA-WEB-URL",
+        "EXPO_PUBLIC_SUPABASE_URL": "https://YOUR-PROJECT.supabase.co",
+        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "YOUR-PUBLISHABLE-ANON-KEY",
+        "EXPO_PUBLIC_SITE_URL": "https://YOUR-STOKIA-WEB-URL"
+      }
+    },
+    "production": {
+      "autoIncrement": true,
+      "android": { "buildType": "app-bundle" },
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://YOUR-STOKIA-WEB-URL",
+        "EXPO_PUBLIC_SUPABASE_URL": "https://YOUR-PROJECT.supabase.co",
+        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "YOUR-PUBLISHABLE-ANON-KEY",
+        "EXPO_PUBLIC_SITE_URL": "https://YOUR-STOKIA-WEB-URL"
+      }
+    }
+  },
+  "submit": { "production": {} }
+}

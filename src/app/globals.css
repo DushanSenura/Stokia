@@ -1,0 +1,175 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ---------- Stokia design tokens: "Calm Commerce" ---------- */
+:root {
+  --background: #f8faf8; /* Warm White */
+  --surface: #ffffff; /* Surface White */
+  --surface-soft: #eef2ef; /* Soft Surface */
+  --border: #d9e3dd; /* Border Gray */
+  --foreground: #1f2a24; /* Main Text */
+  --muted: #566359; /* Secondary Text */
+  --primary: #2f8f6b; /* Primary Emerald (decor, charts, large text) */
+  --action: #1f6b50; /* Accessible Action Emerald (buttons, links) */
+  --action-foreground: #ffffff;
+  --sage: #7db79a;
+  --mint: #ddf2e7;
+  --mint-foreground: #1f6b50;
+  --success: #1f7a4d;
+  --success-soft: #dff3e8;
+  --warning: #8a5a00;
+  --warning-soft: #fdf0d2;
+  --danger: #b42318;
+  --danger-soft: #fde4e1;
+  --info: #1f5f99;
+  --info-soft: #e0edf9;
+  --ring: #2f8f6b;
+  --glass: rgba(255, 255, 255, 0.72);
+  --shadow-soft: 0 1px 2px rgba(31, 42, 36, 0.04), 0 8px 24px -12px rgba(31, 42, 36, 0.12);
+  /* Chart marks. Validated with the data-viz palette checker against the light surface (CVD dE 8.6, contrast >= 3:1). */
+  --viz-calc: #2f8f6b;
+  --viz-review: #b87800;
+  --viz-pending: #7e8f86; /* neutral: "no figure" is texture + label, never a data hue */
+}
+
+.dark {
+  --background: #0e1512;
+  --surface: #151f1a;
+  --surface-soft: #1b2822;
+  --border: #2a3a32;
+  --foreground: #e8f0eb;
+  --muted: #9db0a5;
+  --primary: #4cb88c;
+  --action: #1f6b50;
+  --action-foreground: #ffffff;
+  --sage: #7db79a;
+  --mint: #1d3a2d;
+  --mint-foreground: #a8e0c4;
+  --success: #6fd0a0;
+  --success-soft: #17382a;
+  --warning: #f0c060;
+  --warning-soft: #3b2f10;
+  --danger: #ff9b8f;
+  --danger-soft: #451a16;
+  --info: #8ec1f0;
+  --info-soft: #142a40;
+  --ring: #4cb88c;
+  --glass: rgba(21, 31, 26, 0.72);
+  --shadow-soft: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px -12px rgba(0, 0, 0, 0.5);
+  /* Dark steps chosen for the dark band (validated: CVD dE 10.3, contrast >= 3:1 on the dark surface). */
+  --viz-calc: #3fa67d;
+  --viz-review: #c98500;
+  --viz-pending: #7b8f84;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-surface-soft: var(--surface-soft);
+  --color-border: var(--border);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-primary: var(--primary);
+  --color-action: var(--action);
+  --color-action-foreground: var(--action-foreground);
+  --color-sage: var(--sage);
+  --color-mint: var(--mint);
+  --color-mint-foreground: var(--mint-foreground);
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+  --color-warning: var(--warning);
+  --color-warning-soft: var(--warning-soft);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --color-info: var(--info);
+  --color-info-soft: var(--info-soft);
+  --color-ring: var(--ring);
+  --font-sans: var(--font-inter), var(--font-sinhala), ui-sans-serif, system-ui, sans-serif;
+  --radius-card: 1.25rem;
+  --shadow-soft: var(--shadow-soft);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+html[lang="si"] body {
+  font-family: var(--font-sinhala), var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Tabular numerals for quantities and money */
+.num {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
+}
+
+:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+/* Subtle liquid-glass surface (used sparingly) */
+.glass {
+  background: var(--glass);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--border);
+}
+
+@keyframes skeleton {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+.skeleton {
+  animation: skeleton 1.6s ease-in-out infinite;
+}
+
+@keyframes check-draw {
+  to { stroke-dashoffset: 0; }
+}
+.check-draw {
+  stroke-dasharray: 24;
+  stroke-dashoffset: 24;
+  animation: check-draw 0.35s 0.1s ease-out forwards;
+}
+
+/* Respect reduced motion everywhere */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .check-draw { stroke-dashoffset: 0; }
+}
+
+/* Safe-area padding for the mobile bottom nav */
+.safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* ---------- Print: reports print on white paper with black text, without the app chrome ---------- */
+@media print {
+  @page { size: A4 landscape; margin: 12mm; }
+  :root, .dark {
+    --background: #fff; --surface: #fff; --surface-soft: #f3f3f3; --border: #c9c9c9;
+    --foreground: #000; --muted: #444; --action: #000; --mint: #f3f3f3; --mint-foreground: #000;
+    --shadow-soft: none; --glass: #fff;
+  }
+  body { background: #fff !important; color: #000 !important; font-size: 11px; }
+  .glass { backdrop-filter: none; -webkit-backdrop-filter: none; }
+  a { color: inherit; text-decoration: none; }
+  tr, td, th { break-inside: avoid; }
+  thead { display: table-header-group; } /* repeat column headers on every printed page */
+}

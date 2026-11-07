@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>Offline · Stokia</title>
+  <link rel="icon" href="/icons/icon-192.png">
+  <style>
+    :root { --bg:#f8faf8; --fg:#1f2a24; --muted:#566359; --card:#ffffff; --border:#dfe7e2; --action:#1f6b50; --action-fg:#ffffff; }
+    @media (prefers-color-scheme: dark) { :root { --bg:#0e1512; --fg:#e9f1ec; --muted:#a8b8ae; --card:#16201b; --border:#27352d; --action:#7db79a; --action-fg:#0e1512; } }
+    * { box-sizing: border-box; }
+    body { margin:0; min-height:100dvh; display:grid; place-items:center; padding:16px; background:var(--bg); color:var(--fg);
+           font-family: Inter, system-ui, -apple-system, "Segoe UI", "Noto Sans Sinhala", Roboto, sans-serif; line-height:1.5; }
+    main { width:100%; max-width:30rem; background:var(--card); border:1px solid var(--border); border-radius:24px; padding:28px 24px; text-align:center; }
+    img { width:72px; height:72px; border-radius:16px; }
+    h1 { font-size:1.5rem; margin:16px 0 8px; }
+    p { margin:8px 0; color:var(--muted); }
+    .si { font-size:.95rem; }
+    a.button { display:inline-flex; align-items:center; justify-content:center; min-height:48px; margin-top:20px; padding:0 24px; border-radius:12px;
+               background:var(--action); color:var(--action-fg); font-weight:600; text-decoration:none; }
+    a.button:focus-visible { outline:3px solid var(--fg); outline-offset:3px; }
+  </style>
+</head>
+<body>
+  <main>
+    <img src="/icons/icon-192.png" alt="" width="72" height="72">
+    <h1>You are offline</h1>
+    <p>Stokia needs a connection to open. If you entered a count while offline, it is saved on this phone. Open Stokia again once you are back online and it is sent automatically. It only counts as confirmed once the server accepts it.</p>
+    <p class="si" lang="si">ඔබ නොබැඳි (offline) ව සිටී. නොබැඳිව ඇතුළත් කළ ගණන් කිරීමක් මෙම දුරකථනයේ සුරැකී ඇත. සම්බන්ධතාව ලැබුණු පසු Stokia නැවත විවෘත කරන්න; එය ස්වයංක්‍රීයව යවනු ලැබේ.</p>
+    <a class="button" href="/dashboard">Try again · නැවත උත්සාහ කරන්න</a>
+  </main>
+</body>
+</html>

@@ -1,0 +1,3 @@
+-- Intentionally empty in Phase 1.
+-- Demo/test fixtures live apart from production data (supabase/tests, tests/fixtures)
+-- and are added alongside the features that need them (Phase 2+).

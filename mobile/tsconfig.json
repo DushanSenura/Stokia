@@ -1,0 +1,24 @@
+{
+  "extends": "expo/tsconfig.base",
+  "compilerOptions": {
+    "strict": true,
+    "paths": {
+      // `@/` = the web project's pure, shared code (../src). `~/` = this app's own code.
+      "@/*": ["../src/*"],
+      "~/*": ["./src/*"],
+      // The shared files import these three packages; resolve them from THIS app (as Metro does), not from wherever the
+      // web project happens to be installed, so type-checking works the same on a developer's machine and in CI.
+      "decimal.js": ["./node_modules/decimal.js"],
+      "date-fns": ["./node_modules/date-fns"],
+      "@date-fns/tz": ["./node_modules/@date-fns/tz"]
+    }
+  },
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "*.ts",
+    ".expo/types/**/*.ts",
+    "expo-env.d.ts"
+  ],
+  "exclude": ["node_modules", "dist"]
+}
