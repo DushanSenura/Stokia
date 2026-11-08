@@ -110,9 +110,21 @@ describe("InviteForm", () => {
     await userEvent.click(screen.getByLabelText(/Viewer: can only look/));
     await userEvent.click(screen.getByRole("button", { name: "Send invitation" }));
     await waitFor(() => expect(invite).toHaveBeenCalledTimes(1));
-    expect(Object.fromEntries((invite.mock.calls[0][1] as FormData).entries())).toEqual({ email: "new@shop.lk", display_name: "Nimal", role: "viewer" });
+    expect(Object.fromEntries((invite.mock.calls[0][1] as FormData).entries())).toEqual({ email: "new@shop.lk", display_name: "Nimal", password: "", role: "viewer" });
     expect(await screen.findByText(/Invitation sent/)).toBeInTheDocument();
     await waitFor(() => expect(screen.getByLabelText("Email")).toHaveValue(""));
+  });
+  it("can also send a password the owner chose, in a hidden password box", async () => {
+    invite.mockResolvedValue({ success: "team.createdWithPassword" });
+    render(wrap(<InviteForm serviceKeyReady />));
+    const box = screen.getByLabelText("Password (optional)");
+    expect(box).toHaveAttribute("type", "password");
+    await userEvent.type(screen.getByLabelText("Email"), "new@shop.lk");
+    await userEvent.type(box, "a-long-password-1");
+    await userEvent.click(screen.getByRole("button", { name: "Send invitation" }));
+    await waitFor(() => expect(invite).toHaveBeenCalledTimes(1));
+    expect((invite.mock.calls[0][1] as FormData).get("password")).toBe("a-long-password-1");
+    expect(await screen.findByText(/Account created/)).toBeInTheDocument();
   });
 });
 

@@ -6,6 +6,8 @@ const blank = (v: unknown) => (v === null || v === undefined || (typeof v === "s
 export const inviteSchema = z.object({
   email: z.string().trim().toLowerCase().pipe(z.email("auth.error.email")).refine((e) => e.length <= 254, "auth.error.email"),
   display_name: z.preprocess(blank, z.string().trim().max(80, "team.err.name").optional()),
+  /** Optional: when the owner types one, the account is created with it and the person can sign in at once (no email link needed). */
+  password: z.preprocess(blank, z.string().min(10, "auth.error.passwordShort").max(128, "auth.error.passwordShort").optional()),
   role: z.enum(["owner", "stock_manager", "viewer"], "team.err.role"),
 });
 

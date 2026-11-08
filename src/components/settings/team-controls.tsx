@@ -25,6 +25,10 @@ export function InviteForm({ serviceKeyReady }: { serviceKeyReady: boolean }) {
       <FormMessages state={state} />
       <Field name="email" label="team.email" state={state} type="email" autoComplete="off" required />
       <Field name="display_name" label="team.name" state={state} maxLength={80} autoComplete="off" />
+      <div>
+        <Field name="password" label="team.password" state={state} type="password" maxLength={128} autoComplete="new-password" />
+        <p className="mt-1 text-sm text-muted">{t("team.passwordHelp")}</p>
+      </div>
       <fieldset>
         <legend className="mb-1.5 text-sm font-medium">{t("team.role")}</legend>
         <div className="space-y-2">

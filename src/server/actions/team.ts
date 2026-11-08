@@ -37,7 +37,7 @@ export async function inviteMemberAction(_: FormState, fd: FormData): Promise<Fo
     for (const i of p.error.issues) fieldErrors[String(i.path[0])] ??= i.message as MessageKey;
     return { fieldErrors };
   }
-  const { email, display_name, role } = p.data;
+  const { email, display_name, role, password } = p.data;
 
   const admin = createAdminClient();
   if (!admin) return { error: "team.err.noServiceKey" };
@@ -49,6 +49,13 @@ export async function inviteMemberAction(_: FormState, fd: FormData): Promise<Fo
     const { data: memberships } = await admin.from("shop_memberships").select("shop_id,status").eq("user_id", userId);
     if ((memberships ?? []).some((m) => m.shop_id === g.shopId)) return { error: "team.err.alreadyMember" };
     if ((memberships ?? []).length > 0) return { error: "team.err.otherShop" };
+  } else if (password) {
+    // The owner chose the password: create the account ready to sign in (no email link). The password is never stored or logged here.
+    const { data, error } = await admin.auth.admin.createUser({
+      email, password, email_confirm: true, user_metadata: display_name ? { display_name } : undefined,
+    });
+    if (error || !data.user) return { error: error?.status === 422 ? "auth.error.passwordShort" : "team.err.inviteFailed" };
+    userId = data.user.id;
   } else {
     const { data, error } = await admin.auth.admin.inviteUserByEmail(email, {
       data: display_name ? { display_name } : undefined,
@@ -62,7 +69,7 @@ export async function inviteMemberAction(_: FormState, fd: FormData): Promise<Fo
   const { error } = await g.supabase.from("shop_memberships").insert({ shop_id: g.shopId, user_id: userId, role, status: "invited" });
   if (error) return { error: mapError(error) };
   revalidatePath("/settings/team");
-  return { success: existingId ? "team.invitedExisting" : "team.invited" };
+  return { success: existingId ? "team.invitedExisting" : password ? "team.createdWithPassword" : "team.invited" };
 }
 
 /** Send the invitation email again (for someone who has not accepted yet). */
