@@ -23,4 +23,4 @@ export function BarChart({ points, summary, height = 110 }: { points: BarInput[]
       ))}
     </View>
   );
-}
+} 
